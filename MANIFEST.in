@@ -1,0 +1,2 @@
+recursive-include hackbox/templates *
+recursive-include hackbox/static *
