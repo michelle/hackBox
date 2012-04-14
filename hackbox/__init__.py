@@ -1,14 +1,14 @@
 from flask import Flask, url_for
-from flaskext.compass import Compass
+#from flaskext.compass import Compass
 from flask.logging import create_logger
 import os
 
 app = Flask(__name__)
 app.config.from_pyfile('config.py')
 
-app.jinja_env.add_extension('pyjade.ext.jinja.PyJadeExtension')
+#app.jinja_env.add_extension('pyjade.ext.jinja.PyJadeExtension')
 
-compass = Compass(app)
+#compass = Compass(app)
 logger = create_logger(app)
 
 try:
