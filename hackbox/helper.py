@@ -83,10 +83,21 @@ def getClient():
 
 def get_public_files(client):
     entries = client.delta()["entries"]
-    return [ [path, metadata] for path, metadata in entries if
-            not metadata['is_dir'] and (path.startswith('/public/') or path == '/public') ]
+    return [ dict(metadata.items() + [("uncanonical_path", path)])
+             for path, metadata in entries if
+             not metadata['is_dir'] and (path.startswith('/public/') or path == '/public') ]
 
-def add_user(client):
+def save_public_files(user, client):
+    files = []
+    for file_ in get_public_files(client):
+        files.append(insert_file(file_))
+    user['files'] = files
+    db.users.update({'uid': user['uid']}, {'$set': {'files': files}})
+
+def insert_file(file_):
+    pass
+
+def get_or_add_user(client):
     account_info = client.account_info()
     email = account_info['email'] 
     display_name = account_info['display_name']
@@ -99,8 +110,8 @@ def add_user(client):
             'display_name': display_name,
             'uid': uid,
         })
-
-def get_user(client):
-    uid = client.account_info()['uid']
-    add_user(client)
     return db.users.find_one({'uid': uid})
+
+def post_auth(client):
+    get_or_add_user(client) 
+    save_public_files(user, client)
