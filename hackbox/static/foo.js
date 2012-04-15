@@ -74,6 +74,7 @@ $(document).ready(function() {
         paper.clear();
         var x = 3 * $(window).width() / 5;
         var y = $(window).height() / 2;
+        paper.circle(x, y, 60).attr({fill: "rgb(255, 255, 255)", stroke: "rgb(255, 255, 255)"});
         drawPrettyCircle(x, y, data);
         drawFolderName(x, y, data);
         updateDetails(data);

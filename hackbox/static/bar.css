@@ -51,6 +51,10 @@ h1 {
   border-left: 3px solid #c2c2c2;
 }
 
+.directory:hover {
+  color: 497364;
+}
+
 
 #details {
   opacity: 0.85;
@@ -81,10 +85,6 @@ h1 {
   cursor: pointer;
 }
 
-.selected {
-  background-color: #F2DC99;
-}
-
 #details strong {
   color: #F2BC1B;
   font-weight: 700;
@@ -113,7 +113,7 @@ h1 {
 }
 
 #userinfo strong {
-  color: #e4838c;
+  color: #757575;
 }
 
 #name {
