@@ -14,14 +14,14 @@
 
 {% for file_ in files %}
   {% if file_['type'] == 'image' %}
-      <img src="http://dl.dropbox.com/u/{{file_['owner_id']}}/{{file_['filename']}}" height="200"/><br/>
-      <p>{{file_['filename']}}</p>
+      <img src="{{helper.get_public_file_url(file_)}}" height="200"/><br/>
+    <p>{{helper.strip_public_header(file_['path'])}}</p>
   {% elif file_['type'] == 'audio' %}
       <audio controls="controls">
-	<source src="https://dl.dropbox.com/u/{{file_['owner_id']}}/{{file_['filename']}}" type="{{file_['mime_type']}}"/>
+      <source src="{{helper.get_public_file_url(file_)}}" type="{{file_['mime_type']}}"/>
       </audio>
       <br/>
-    <p>{{file_['filename']}}</p>
+    <p>{{helper.strip_public_header(file_['path'])}}</p>
   {% endif %}
 {% endfor %}
   </body>

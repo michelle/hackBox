@@ -142,7 +142,7 @@ def get_files(client=None, uid=None, user=None):
         return list(db.files.find())
     user = user or db.users.find_one({'uid': uid or client.account_info()['uid']})
     files = user.get('files', [])
-    return [db.files.find_one(file_) for file_ in files]
+    return filter(lambda x: x, [db.files.find_one(file_) for file_ in files])
 
 def is_public_file(file_):
     return not file_['is_dir'] \
