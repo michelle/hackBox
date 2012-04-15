@@ -1,7 +1,5 @@
 $(document).ready(function() {
 
-
-
     currentPosition = 0;
     $("#sidebar").mousemove(function(e) {
         var h = $(this).height();
@@ -52,7 +50,7 @@ $(document).ready(function() {
                 .attr({arc: [start, end, radius, Math.random() * 255, Math.random() * 255, Math.random() * 255]})
                 .data("folder", data)
                 .click(function() {
-                    drawPrettyCircle(x, y, data);
+                    redrawAll(data);
                 });
             circle.show();
         }, animate: function(start, end, duration) {
@@ -62,7 +60,7 @@ $(document).ready(function() {
                 .attr({arc: [start, end, radius, Math.random() * 255, Math.random() * 255, Math.random() * 255]})
                 .data("folder", data)
                 .click(function() {
-                    drawPrettyCircle(x, y, data);
+                    redrawAll(data);
                 });
             circle.animate({arc: [start, end, radius, Math.random() * 255, Math.random() * 255, Math.random() * 255 ]}, 1000, "backOut");
 
@@ -70,14 +68,6 @@ $(document).ready(function() {
     }
 
     var drawPrettyCircle = function(x, y, data) {
-        paper.clear();
-        updateDetails(data);
-        var folderName = paper.text(3*$(window).width()/5, $(window).height()/2, currentFolderStr);
-        folderName.attr({"font": "Open Sans", "font-size": "12px", "font-weight": "700"});
-
-        folderName.show();
-        
-
         drawPrettyLayer(x, y, data, 0, 1, 0);
     }
 
@@ -92,7 +82,7 @@ $(document).ready(function() {
 
         for (var i in data.children) {
             if (data.children[i].is_dir) {
-                var folderArc = makeFolderArc(x, y, 42, 80 + depth * 40, data.children[i]);
+                var folderArc = makeFolderArc(x, y, 41, 80 + depth * 40, data.children[i]);
                 var end = start + data.children[i].bytes / data.bytes * (parentEnd - parentStart);
                 if (depth == 0 || end - start > 0.01) {
                     folderArc.draw(start, end);
@@ -100,8 +90,22 @@ $(document).ready(function() {
                     start = end;
                 }
             }
-        }
-        
+        }        
+    }
+
+    var drawFolderName = function(x, y, data) {
+        var folderName = paper.text(x, y, getFolderName(data.path));
+        folderName.attr({"font": "Open Sans", "font-size": "12px", "font-weight": "700"});
+        folderName.show();
+    }
+
+    var redrawAll = function(data) {
+        paper.clear();
+        var x = 3 * $(window).width() / 5;
+        var y = $(window).height() / 2;
+        drawPrettyCircle(x, y, data);
+        drawFolderName(x, y, data);
+        updateDetails(data);
     }
 
     $.get('/get_folder_data', function(data) {
@@ -116,33 +120,23 @@ $(document).ready(function() {
               collapsible: true,
               active: false });
 
-        drawPrettyCircle(3*$(window).width()/5, $(window).height()/2, data);
-
-        
-        updateDetails(data);
-        currentFolder = data;
-        var folderName = paper.text(3*$(window).width()/5, $(window).height()/2, currentFolderStr);
-        folderName.attr({"font": "Open Sans", "font-size": "12px", "font-weight": "700"});
-
-        folderName.show();
-        
+        redrawAll(data);
     });
 
-    var currentFolderStr = "";
+    var getFolderName = function(path) {
+        console.log("path: ", path);
+        if (path == "/") {
+            return "/";
+        } else {
+            return path.split('/').pop();
+        }
+    }
 
     bytesToMB = function(bytes) {
         return bytes * (9.53674316 * Math.pow(10, -7));
     }
 
     updateDetails = function(item) {
-        //var attrs = $("")
-        var paths = item.path.split('/');
-        if (item.path == "/") {
-            currentFolderStr = "/";
-        } else {
-            currentFolderStr = paths.pop();
-        }
-
         $("#size").html(Math.round(bytesToMB(item.bytes)));
         if (item.modified != undefined) {
             var date = item.modified.split(' ');
@@ -168,7 +162,7 @@ $(document).ready(function() {
         }
         parent.append(innerdiv); 
         elem.click(function() {
-            drawPrettyCircle(3*$(window).width()/5, $(window).height()/2, item);
+            redrawAll(item);
         });
     }
 
