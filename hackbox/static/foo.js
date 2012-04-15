@@ -65,7 +65,7 @@ $(document).ready(function() {
             var x = x0 + 270 * Math.cos(startAngle);
             var y = y0 + 270 * Math.sin(startAngle);
             paper.setStart();
-//            drawPrettyCircle(x, y, folderHistory[i], true);
+            drawPrettyCircle(x, y, folderHistory[i], true);
             paper.circle(x, y, 40).attr({fill: "r(0.75, 0.25)#fff-#ccc", stroke: "rgb(188, 188, 188)"});
             var st = paper.setFinish();
             st.attr({transform: "s0.4 0.4 " + x + " " + y, "stroke-width": 20});
@@ -278,10 +278,10 @@ $(document).ready(function() {
 
     $.get('/get_folder_data', function(data) {
 //        console.log(data);
+        spinner.stop()
         root = data;
 
         display(data, $("#tree"));
-        spinner.stop()
         $( ".folder" ).accordion(
             { autoHeight: false,
               collapsible: true,
