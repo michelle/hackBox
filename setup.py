@@ -12,7 +12,7 @@ setup(
         'dropbox',
         'hurry.filesize',
         #'Flask-Compass',
-        #'pymongo',
+        'pymongo',
         #'pyjade==0.6.2',
         #'LEPL',
 	    #'Unidecode',
