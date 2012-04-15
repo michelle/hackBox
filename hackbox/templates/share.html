@@ -10,19 +10,24 @@
     <a href='/share/'>All</a>
     <a href='/share/image'>Images</a>
     <a href='/share/audio'>Songs</a>
-    <a href='/share/docs'>Documents</a><br/><br/>
+    <a href='/share/doc'>Documents</a><br/><br/>
 
 {% for file_ in files %}
   {% if file_['type'] == 'image' %}
-      <img src="{{helper.get_public_file_url(file_)}}" height="200"/><br/>
+    <img src="{{helper.get_public_file_url(file_)}}" height="200"/><br/>
+    <div class="filename">{{helper.strip_public_header(file_['path'])}}</div>
+    <div class="by">{{helper.get_owner_name(file_)}}</div>
+  {% elif file_['type'] == 'audio' %}
+    <audio controls="controls">
+      <source src="{{helper.get_public_file_url(file_)}}" type="{{file_['mime_type']}}"/>
+    </audio>
+    <br/>
     <div class="filename">{{helper.strip_public_header(file_['path'])}}</div>
     <div class="by" >{{helper.get_owner_name(file_)}}</div>
-      
-  {% elif file_['type'] == 'audio' %}
-      <audio controls="controls">
-      <source src="{{helper.get_public_file_url(file_)}}" type="{{file_['mime_type']}}"/>
-      </audio>
-      <br/>
+  {% elif file_['mime_type'] == 'application/pdf' %}
+    <a href="{{helper.get_public_file_url(file_)}}">
+      <img src="http://hacknmod.com/wp-content/uploads/2009/04/pdf.jpg" height="200">
+    </a>
     <div class="filename">{{helper.strip_public_header(file_['path'])}}</div>
     <div class="by" >{{helper.get_owner_name(file_)}}</div>
   {% endif %}

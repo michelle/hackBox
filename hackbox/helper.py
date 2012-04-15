@@ -7,27 +7,30 @@ from hurry.filesize import size, alternative
 from functools import wraps
 from flask import url_for, session, redirect
 from hackbox.db import db
+from time import time
+import re
 
+UPDATE_LIMIT = 15
 
-
-def filetype_checker(filetype):
-    def checker(file_):
-        if type(file_) != type({}):
-            file_ = db.files.find_one(file_)
-        return file_['type'] == filetype
-    return checker
-
-is_image = filetype_checker('image')
-is_audio = filetype_checker('audio')
+is_audio = lambda file_: get_actual_file(file_)['mime_type'].startswith('audio/')
+is_image = lambda file_: get_actual_file(file_)['mime_type'].startswith('image/')
+is_doc = lambda file_: get_actual_file(file_)['mime_type'] == 'application/pdf'
 
 get_images = lambda : get_actual_files(list(db.images.find()))
 get_audios = lambda : get_actual_files(list(db.audios.find()))
+get_docs = lambda : get_actual_files(list(db.docs.find()))
 
-ACCEPTABLE_TYPES = { 'audio',
-                     'image', }
+TYPE_GETTER = { 'audio': get_audios, 'image': get_images, 'doc': get_docs}
+TYPE_VERIFIER = { 'audio': is_audio, 'image': is_image, 'doc': is_doc}
 
-TYPE_GETTER = { 'audio': get_audios, 'image': get_images }
-TYPE_VERIFIER = { 'audio': is_audio, 'image': is_image }
+def get_type(file_):
+    if file_['is_dir']:
+        return 'folder'
+    for type_, verifier in TYPE_VERIFIER.items():
+        if verifier(file_):
+            return type_
+    return None
+
 def dropbox_auth_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -126,12 +129,23 @@ def get_user(client=None, uid=None):
 
 def update_files(client, uid=None, user=None):
     user = user or get_user(client, uid)
-    files = get_files(client, user=user)
-    dict_files = get_dict_files(files)
+    last_updated = user.get('last_updated', 0)
+    if time() - last_updated < UPDATE_LIMIT:
+        return
+    files = None
+    dict_files = None
     cursor = user.get('cursor', None)
+    
     while True:
         delta = client.delta(cursor)
         entries = delta["entries"]
+
+        if len(entries) == 0 and not files: # first round of update; nothing new
+            return
+
+        if not files or not dict_files:
+            files = get_files(client, user=user)
+            dict_files = get_dict_files(files)
         for path, file_ in entries:
             if dict_files.get(path):
                 db.files.remove(dict_files[path])
@@ -139,6 +153,7 @@ def update_files(client, uid=None, user=None):
                 db.public_files.remove(id_wrap)
                 db.images.remove(id_wrap)
                 db.audios.remove(id_wrap)
+                db.docs.remove(id_wrap)
             if file_:
                 dict_files[path] = insert_file(user, file_, path)
             else:
@@ -146,7 +161,6 @@ def update_files(client, uid=None, user=None):
                     if file_['lc_path'].startswith(path):
                         db.files.remove(file_)
                 files = filter(lambda file_: not file_['lc_path'].startswith(path), files)
-        cursor = delta["cursor"]
         if not delta["has_more"]:
             break
 
@@ -164,22 +178,34 @@ def update_files(client, uid=None, user=None):
     public_files = filter(is_public_file, files)
     audios = filter(TYPE_VERIFIER['audio'], public_files)
     images = filter(TYPE_VERIFIER['image'], public_files)
+    docs = filter(TYPE_VERIFIER['doc'], public_files)
 
-    db.users.update({'uid': user['uid']}, {'$set': {'files': files, 'public_files': public_files, 'audios': audios, 'images': images, 'cursor': cursor}}, safe=True)
+    db.users.update(
+            {'uid': user['uid']},
+            {'$set':
+                {'files'        : files,
+                 'public_files' : public_files,
+                 'audios'       : audios,
+                 'images'       : images,
+                 'docs'         : docs,
+                 'cursor'       : cursor,
+                 'last_updated' : time()
+                }
+            }, safe=True)
 
 def get_files(client=None, uid=None, user=None):
     if not client:
         return list(db.files.find())
     user = user or get_user(client, uid)
     files = user.get('files', [])
-    return filter(lambda x: x, [db.files.find_one(file_) for file_ in files])
+    return filter(bool, [db.files.find_one(file_) for file_ in files])
 
 def is_public_file(file_):
     if type(file_) != type({}):
         file_ = db.files.find_one(file_)
     return not file_['is_dir'] \
            and (file_['lc_path'].startswith('/public/') or file_['lc_path'] == '/public') \
-           and file_['mime_type'].split('/')[0] in ACCEPTABLE_TYPES
+           and get_type(file_)
 
 def get_public_files(client=None):
     if not client:
@@ -189,10 +215,7 @@ def get_public_files(client=None):
 def insert_file(user, file_, path):
     file_['owner_id'] = user['uid']
     file_['filename'] = file_['path'].split('/')[-1]
-    if 'mime_type' in file_:
-        file_['type'] = file_['mime_type'].split('/')[0]
-    else:
-        file_['type'] = 'folder'
+    file_['type'] = get_type(file_)
     file_['path'] = file_['path']
     file_['lc_path'] = path or file_['path'].lower()
     file_id = db.files.insert( file_ )
@@ -203,6 +226,8 @@ def insert_file(user, file_, path):
             db.audios.insert( id_wrap)
         elif file_['type'] == 'image':
             db.images.insert( id_wrap)
+        elif file_['type'] == 'doc':
+            db.docs.insert( id_wrap)
     return file_id
 
 def get_or_add_user(client):
@@ -239,6 +264,11 @@ def get_account_info(session):
     client = session['client']
     return json.dumps(client.account_info())
 
+def get_actual_file(file_):
+    if type(file_) != type({}):
+        return db.files.find_one(file_)
+    return file_
+
 def get_actual_files(files):
     return [db.files.find_one(file_['file_id']) for file_ in files]
 
@@ -248,5 +278,4 @@ def dropdb():
     db.public_files.drop()
     db.images.drop()
     db.audios.drop()
-
-
+    db.docs.drop()
