@@ -1,4 +1,6 @@
 $(document).ready(function() {
+    var currentFolder;
+
     currentPosition = 0;
     $("#sidebar").mousemove(function(e) {
         var h = $(this).height();
@@ -34,7 +36,17 @@ $(document).ready(function() {
                                         collapsible: true,
                                         animated: false,
                                         active: false });
+
+        currentFolder = data;
+        updateDetails(data);
     });
+
+    updateDetails = function(item) {
+        //var attrs = $("")
+        if (data.path.split('/').length == 0) {
+
+        }
+    }
 
     display = function(item, parent) {
         var name = item.path.split('/').pop();
@@ -86,13 +98,13 @@ $(document).ready(function() {
         }};
     }
 
-    var prettyCircle1 = makePrettyCircle(600, 400, 42, 80);
+    var prettyCircle1 = makePrettyCircle(3*$(window).width()/5, $(window).height()/2, 30, 60);
     prettyCircle1.draw(15, 30);
     prettyCircle1.draw(30, 60);
     prettyCircle1.draw(60, 90);
     prettyCircle1.draw(90, 15);
 
-    var folderName = paper.text(600, 400, "Folder Name");
-    folderName.attr({"font": "Verdana", "font-size": "20px"});
+    var folderName = paper.text(3*$(window).width()/5, $(window).height()/2, "Folder Name");
+    folderName.attr({"font": "Open Sans", "font-size": "12px"});
     folderName.show();
 });
