@@ -88,4 +88,8 @@ $(document).ready(function() {
     prettyCircle1.draw(30, 60);
     prettyCircle1.draw(60, 90);
     prettyCircle1.draw(90, 15);
+
+    var folderName = paper.text(600, 400, "Folder Name");
+    folderName.attr({"font": "Verdana", "font-size": "20px"});
+    folderName.show();
 });
