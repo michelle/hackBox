@@ -9,8 +9,6 @@ from flask import url_for, session, redirect
 from hackbox.db import db
 import re
 
-
-
 def filetype_checker(filetype):
     def checker(file_):
         if type(file_) != type({}):
@@ -136,6 +134,7 @@ def get_user(client=None, uid=None):
 def update_files(client, uid=None, user=None):
     user = user or get_user(client, uid)
     files = get_files(client, user=user)
+
     dict_files = get_dict_files(files)
     cursor = user.get('cursor', None)
     while True:
@@ -182,7 +181,7 @@ def get_files(client=None, uid=None, user=None):
         return list(db.files.find())
     user = user or get_user(client, uid)
     files = user.get('files', [])
-    return filter(lambda x: x, [db.files.find_one(file_) for file_ in files])
+    return filter(bool, [db.files.find_one(file_) for file_ in files])
 
 def is_public_file(file_):
     if type(file_) != type({}):
@@ -199,11 +198,7 @@ def get_public_files(client=None):
 def insert_file(user, file_, path):
     file_['owner_id'] = user['uid']
     file_['filename'] = file_['path'].split('/')[-1]
-    #if 'mime_type' in file_:
-    file_['type'] = get_type(file_)#['mime_type'].split('/')[0]
-    #else:
-    #    file_['type'] = 'folder'
-    file_['path'] = file_['path']
+    file_['type'] = get_type(file_)
     file_['lc_path'] = path or file_['path'].lower()
     file_id = db.files.insert( file_ )
     if is_public_file(file_):
@@ -261,5 +256,3 @@ def dropdb():
     db.images.drop()
     db.audios.drop()
     db.docs.drop()
-
-

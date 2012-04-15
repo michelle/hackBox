@@ -45,7 +45,7 @@ def share(type_=None):
     else:
         files = helper.get_public_files()
 
-    #print files
+    print files
     if search:
         def filter_fn( file_ ):
             return ( not type_ or type_ == file_['type'] ) and ( not search or search.lower() in file_['path'].lower() )
