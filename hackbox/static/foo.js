@@ -44,15 +44,19 @@ var opts = {
     var popFolderHistory = function(index) {
         console.log("Pop:", folderHistory);
         console.log(index);
-        redrawAll(folderHistory[index]);
-        
-        for (var i = folderHistory.length; i > index; i--) {
-            console.log('pooping', folderHistory.pop());
+        if (folderHistory.length == 0) {
+            redrawAll(root);
+        } else {
+            redrawAll(folderHistory[index]);
+            
+            for (var i = folderHistory.length; i > index; i--) {
+                console.log('pooping', folderHistory.pop());
+            }
         }
     }
 
     var drawFolderHistory = function(x0, y0) {
-        var startAngle = 0;
+        var startAngle = -70;
 
         console.log("prepare to draw:", folderHistory);
         for (var i in folderHistory) {
@@ -179,6 +183,7 @@ var opts = {
     }
 
     var redrawAll = function(data) {
+        console.log(data);
         paper.clear();
         var x = 3 * $(window).width() / 5;
         var y = $(window).height() / 2;
