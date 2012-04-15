@@ -43,3 +43,10 @@ def get_folder_data():
     else:
         folder_data = session['folder_data']
     return jsonify(folder_data)
+
+@app.route('/get_account_info')
+@dropbox_auth_required
+def get_account_info():
+    client = session['client']
+    return jsonify(client.account_info())
+
