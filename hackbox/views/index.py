@@ -67,3 +67,19 @@ def get_folder_data():
 def get_account_info():
     client = session['client']
     return jsonify(client.account_info())
+
+@app.route('/sharefolder')
+@helper.dropbox_auth_required
+def get_account_info():
+    client = session['client']
+    share = client.share(request.json['path'])
+    return jsonify({'link':share})
+
+@app.route('/sharefolder')
+@helper.dropbox_auth_required
+def get_account_info():
+    client = session['client']
+    share = client.file_delete(request.json['path'])
+    return jsonify({})
+
+

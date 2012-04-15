@@ -148,8 +148,8 @@ def update_files(client, uid=None, user=None):
             dict_files = get_dict_files(files)
         for path, file_ in entries:
             if dict_files.get(path):
+                id_wrap = {'file_id':dict_files[path]['_id']}
                 db.files.remove(dict_files[path])
-                id_wrap = {'file_id' : file_id}
                 db.public_files.remove(id_wrap)
                 db.images.remove(id_wrap)
                 db.audios.remove(id_wrap)
