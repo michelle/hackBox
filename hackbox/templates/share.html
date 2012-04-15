@@ -3,6 +3,16 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
   </head>
   <body>
+    <form action="/share" method="get">
+      Search: <input type="text" name="search"/>
+      <input type="submit" value="Go!"/><br/>
+    </form>
+    <a href='/share/'>All</a>
+    <a href='/share/image'>Images</a>
+    <a href='/share/audio'>Songs</a>
+    <a href='/share/docs'>Documents</a>
+
+
 {% for file_ in files %}
   <li>{{ file_ }}</li>
   {% if file_['type'] == 'image' %}

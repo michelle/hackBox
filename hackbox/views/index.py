@@ -26,14 +26,22 @@ def index():
     user = get_or_add_user(session['client'])
     return render_template('index.html', user=user)
 
-@app.route('/share')
+@app.route('/share/<type_>')
+@app.route('/share/')
 @dropbox_auth_required
-def share():
+def share(type_=None):
+    search = request.args.get('search')
     client = session['client']
+
     user = get_or_add_user(client)
     files = list(db.file.find())
+
+    if type_ or search:
+        def filter_fn( file_ ):
+            return type_ == type_ and search in file_['path']
+        files = filter(filter_fn, files)
     return render_template('share.html', files=files)
-        
+
 @app.route('/get_folder_data')
 @dropbox_auth_required
 def get_folder_data():
