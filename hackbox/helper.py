@@ -74,6 +74,7 @@ def nested_list(entries):
             processed_entry = metadata
             processed_entry['uncanonical_path'] = uncanonical_path
             dict_entries[path]['children'].append(processed_entry)
+        dict_entries[path]['children'].sort(key=lambda child : child['bytes'])
     return dict_entries['/']
 
 def get_nested_folder(client):
