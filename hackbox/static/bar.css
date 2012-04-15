@@ -16,6 +16,7 @@ body, html {
   top: 0px;
   background-color: #fff;
   border-right: 10px solid #c2c2c2;
+  z-index: 100;
 }
 
 #sidebar h3:focus, .folder h3:focus {
@@ -52,13 +53,13 @@ h1 {
 #details {
   opacity: 0.85;
   position: fixed;
-  border: 5px solid #fff;
+  border: 3px solid #fff;
   background-color: #362f2d;
   border-radius: 5px;
-  width: 200px;
-  height: 100px;
+  width: 150px;
+  height: 70px;
   left: 250px;
-  top: 30px;
+  top: 20px;
   color: #fff;
   padding: 10px;
   font-size: 12px;
@@ -82,6 +83,7 @@ h1 {
 #details strong {
   color: #F2BC1B;
   font-weight: 700;
+  z-index: 99;
 }
 
 #details:hover {
@@ -93,6 +95,7 @@ h1 {
 }
 
 #holder {
-  margin-left: 400px;
+  /*margin-left: 400px;*/
+  z-index: 0;
 }
 
