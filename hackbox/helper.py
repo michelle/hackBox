@@ -1,5 +1,6 @@
 import os
 import dropbox
+import json
 from collections import defaultdict
 from hackbox import app
 from hurry.filesize import size, alternative
@@ -149,7 +150,7 @@ def is_public_file(file_):
            and (file_['lc_path'].startswith('/public/') or file_['lc_path'] == '/public') \
            and file_['mime_type'].split('/')[0] in ACCEPTABLE_TYPES
 
-def get_public_files(client):
+def get_public_files(client=None):
     return filter(is_public_file, get_files(client))
 
 def insert_file(user, file_, path):
@@ -182,3 +183,17 @@ def get_or_add_user(client):
 def post_auth(client):
     user = get_or_add_user(client) 
     update_files(client, user=user)
+
+def get_folder_data(session):
+    client = session['client']
+    user = get_or_add_user(client)
+    update_files(client, user=user)
+    if 'folder_data' not in session:
+        folder_data = get_nested_folder(client)
+    else:
+        older_data = session['folder_data']
+    return json.dumps(folder_data)
+
+def get_account_info(session):
+    client = session['client']
+    return json.dumps(client.account_info())

@@ -4,6 +4,8 @@ $(document).ready(function() {
 
     var folderStack = new Array();
 
+    var mix = {red: 242, green: 188, blue: 27};
+
     var pushFolderStack = function(data) {
     }
 
@@ -22,7 +24,7 @@ $(document).ready(function() {
             var endAngle = end * 2 * Math.PI;
             var path = [["M", x + radius * Math.cos(startAngle), y + radius * Math.sin(startAngle)],
                         ["A", radius, radius, 0, +((end - start) > 0.5), 1, x + radius * Math.cos(endAngle), y + radius * Math.sin(endAngle)]];
-            return {path: path, stroke: "rgb(".concat(R, ',', G, ',', B, ')')};
+            return {path: path, stroke: "rgb(".concat((R + mix.red) / 2, ',', (G + mix.green) / 2, ',', (B + mix.blue) / 2, ')')};
         };
 
         return {draw: function(start, end) {
@@ -110,7 +112,7 @@ $(document).ready(function() {
     var getFolderName = function(path) {
         console.log("path: ", path);
         if (path == "/") {
-            return "/";
+            return "Dropbox";
         } else {
             return path.split('/').pop();
         }
@@ -131,7 +133,7 @@ $(document).ready(function() {
     var display = function(item, parent) {
         var name = item.path.split('/').pop();
         var elem = $("<h3>" + name + "</h3>");
-        if (item.path == "/") { elem = $("<h3>/</h3>"); }
+        if (item.path == "/") { elem = $("<h3>Dropbox</h3>"); }
 
         parent.append(elem);
         var innerdiv = $("<div></div>").addClass("folder");
@@ -175,7 +177,7 @@ $(document).ready(function() {
         }
     });
 
-    $.get('/get_folder_data', function(data) {
+    (function(data){
         console.log(data);
 
         display(data, $("#tree"));
@@ -188,14 +190,15 @@ $(document).ready(function() {
             { disabled: true });
 
         redrawAll(data);
-    });
+    })(path_data);
 
-    $.get('/get_account_info', function(user) {
+    
+    (function(user) {
         $("#userinfo").html("Welcome, <strong>" + user.display_name + "</strong>. <br>You have <strong>" 
-            + Math.round(bytesToMB(user.quota_info.quota)) + " MB</strong> of data total. <br>You are using <strong>"
-            + Math.round((user.quota_info.normal + user.quota_info.shared)/user.quota_info.quota * 100) + "%</strong> of your space and have <strong>"
-            + Math.round(bytesToMB(user.quota_info.quota - (user.quota_info.normal + user.quota_info.shared))) + " MB</strong> left.");
-    });
+			    + Math.round(bytesToMB(user.quota_info.quota)) + " MB</strong> of data total. <br>You are using <strong>"
+			    + Math.round((user.quota_info.normal + user.quota_info.shared)/user.quota_info.quota * 100) + "%</strong> of your space and have <strong>"
+			    + Math.round(bytesToMB(user.quota_info.quota - (user.quota_info.normal + user.quota_info.shared))) + " MB</strong> left.");
+    })(userinfo);
 
     $("#sidebar").mouseleave(function(e) {
         $(this).stop();
