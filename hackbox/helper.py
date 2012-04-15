@@ -7,6 +7,7 @@ from hurry.filesize import size, alternative
 from functools import wraps
 from flask import url_for, session, redirect
 from hackbox.db import db
+import re
 
 
 
@@ -17,17 +18,25 @@ def filetype_checker(filetype):
         return file_['type'] == filetype
     return checker
 
-is_image = filetype_checker('image')
-is_audio = filetype_checker('audio')
+is_audio = lambda file_: file_['mime_type'].startswith('audio/')
+is_image = lambda file_: file_['mime_type'].startswith('image/')
+is_doc = lambda file_: file_['mime_type'] == 'application/pdf'
 
 get_images = lambda : get_actual_files(list(db.images.find()))
 get_audios = lambda : get_actual_files(list(db.audios.find()))
+get_docs = lambda : get_actual_files(list(db.docs.find()))
 
-ACCEPTABLE_TYPES = { 'audio',
-                     'image', }
+TYPE_GETTER = { 'audio': get_audios, 'image': get_images, 'doc': get_docs}
+TYPE_VERIFIER = { 'audio': is_audio, 'image': is_image, 'doc': is_doc}
 
-TYPE_GETTER = { 'audio': get_audios, 'image': get_images }
-TYPE_VERIFIER = { 'audio': is_audio, 'image': is_image }
+def get_type(file_):
+    if file_['is_dir']:
+        return 'folder'
+    for type_, verifier in TYPE_VERIFIER.items():
+        if verifier(file_):
+            return type_
+    return None
+
 def dropbox_auth_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -139,6 +148,7 @@ def update_files(client, uid=None, user=None):
                 db.public_files.remove(id_wrap)
                 db.images.remove(id_wrap)
                 db.audios.remove(id_wrap)
+                db.docs.remove(id_wrap)
             if file_:
                 dict_files[path] = insert_file(user, file_, path)
             else:
@@ -179,7 +189,7 @@ def is_public_file(file_):
         file_ = db.files.find_one(file_)
     return not file_['is_dir'] \
            and (file_['lc_path'].startswith('/public/') or file_['lc_path'] == '/public') \
-           and file_['mime_type'].split('/')[0] in ACCEPTABLE_TYPES
+           and get_type(file_)
 
 def get_public_files(client=None):
     if not client:
@@ -189,10 +199,10 @@ def get_public_files(client=None):
 def insert_file(user, file_, path):
     file_['owner_id'] = user['uid']
     file_['filename'] = file_['path'].split('/')[-1]
-    if 'mime_type' in file_:
-        file_['type'] = file_['mime_type'].split('/')[0]
-    else:
-        file_['type'] = 'folder'
+    #if 'mime_type' in file_:
+    file_['type'] = get_type(file_)#['mime_type'].split('/')[0]
+    #else:
+    #    file_['type'] = 'folder'
     file_['path'] = file_['path']
     file_['lc_path'] = path or file_['path'].lower()
     file_id = db.files.insert( file_ )
@@ -203,6 +213,8 @@ def insert_file(user, file_, path):
             db.audios.insert( id_wrap)
         elif file_['type'] == 'image':
             db.images.insert( id_wrap)
+        elif file_['type'] == 'doc':
+            db.docs.insert( id_wrap)
     return file_id
 
 def get_or_add_user(client):
@@ -248,5 +260,6 @@ def dropdb():
     db.public_files.drop()
     db.images.drop()
     db.audios.drop()
+    db.docs.drop()
 
 
