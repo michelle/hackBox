@@ -47,7 +47,8 @@ def share(type_=None):
 @helper.dropbox_auth_required
 def get_folder_data():
     client = session['client']
-    helper.update_files(client)
+    user = helper.get_or_add_user(client)
+    helper.update_files(client, user=user)
     if 'folder_data' not in session:
         folder_data = helper.get_nested_folder(client)
     else:

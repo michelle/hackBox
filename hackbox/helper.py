@@ -56,7 +56,6 @@ def with_folder_size(files):
         file_['size'] = get_readable_size(file_['bytes'])
         db.files.update(file_, {'$set': {'size': file_['size']}})
 
-    #new_files.append(['/', {'is_dir': True, 'bytes': folders_size['/'], 'path': '/', 'size' : size(folders_size['/'], system=alternative)}])
     return new_files
 
 def nested_list(files):
@@ -76,7 +75,7 @@ def nested_list(files):
                 dict_files[path]['children'] = []
             processed_entry = file_
             dict_files[path]['children'].append(processed_entry)
-        #dict_files[path]['children'].sort(key=lambda child : -child['bytes'])
+    dict_files['/'].get('children', []).sort(key=lambda child: -child['bytes'])
     return dict_files['/']
 
 def strip_object_id(files):
@@ -116,11 +115,11 @@ def update_files(client, uid=None, user=None):
                 db.files.remove(dict_files[path])
             if file_:
                 dict_files[path] = insert_file(user, file_, path)
-            else: # TODO recursively delete all children if file_ is None
-                pass
-                """for path, file_ in files.iteritems():
+            else:
+                for file_ in files:
                     if file_['lc_path'].startswith(path):
-                        db.files.remove(file_)"""
+                        db.files.remove(file_)
+                files = filter(lambda file_: not file_['lc_path'].startswith(path), files)
         cursor = delta["cursor"]
         if not delta["has_more"]:
             break
@@ -136,8 +135,7 @@ def update_files(client, uid=None, user=None):
         file_['is_dir'] = True
         files.append(db.files.insert(file_))
 
-    db.users.update({'uid': user['uid']}, {'$set': {'files': files}}, safe=True)#, 'files': files}})
-    db.users.update({'uid': user['uid']}, {'$set': {'cursor': cursor}}, safe=True)#, 'files': files}})
+    db.users.update({'uid': user['uid']}, {'$set': {'files': files, 'cursor': cursor}}, safe=True)
     
 def get_files(client=None, uid=None, user=None):
     if not client:
