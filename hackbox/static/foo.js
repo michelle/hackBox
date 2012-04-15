@@ -27,52 +27,101 @@ $(document).ready(function() {
         $(this).stop();
     });
 
-    var r = Raphael("holder", 600, 600),
-    R = 200,
-    init = true,
-    param = {stroke: "#fff", "stroke-width": 30},
-    hash = document.location.hash,
-    marksAttr = {fill: hash || "#444", stroke: "none"}
+    var paper = Raphael("holder", $(window).width(), $(window).height());
 
-    // Custom Attribute
-    r.customAttributes.arc = function (value, total, R) {
-        console.log("aa");
-        var alpha = 360 / total * value,
-        a = (90 - alpha) * Math.PI / 180,
-        x = 300 + R * Math.cos(a),
-        y = 300 - R * Math.sin(a),
-        color = "hsb(".concat(Math.round(R) / 200, ",", value / total, ", .75)"),
-        path;
-        if (total == value) {
-            path = [["M", 300, 300 - R], ["A", R, R, 0, 1, 1, 299.99, 300 - R]];
-        } else {
-            path = [["M", 300, 300 - R], ["A", R, R, 0, +(alpha > 180), 1, x, y]];
-        }
-        return {path: path, stroke: color};
-    };
+    var makePrettyCircle = function(x, y, width, radius) {
+        var param = {"stroke-width": width};
 
-    var sec = r.path().attr(param).attr({arc: [0, 60, R]});
-    R -= 40;
+        paper.customAttributes.arc = function (start, end, total, radius, R, G, B) {
+            var startAngle = start / total * 2 * Math.PI;
+            var endAngle = end / total * 2 * Math.PI;
+            var path = [["M", x + radius * Math.cos(startAngle), y + radius * Math.sin(startAngle)],
+                        ["A", radius, radius, 0, +((end - start) / total > 0.5), 1, x + radius * Math.cos(endAngle), y + radius * Math.sin(endAngle)]];
+            return {path: path, stroke: "rgb(".concat(R, ',', G, ',', B, ')')};
+        };
 
-    function updateVal(value, total, R, hand, id) {
-        var color = "hsb(".concat(Math.round(R) / 200, ",", value / total, ", .75)");
-        if (init) {
-            hand.animate({arc: [value, total, R]}, 900, ">");
-        } else {
-            if (!value || value == total) {
-                value = total;
-                hand.animate({arc: [value, total, R]}, 750, "bounce", function () {
-                    hand.attr({arc: [0, total, R]});
-                });
-            } else {
-                hand.animate({arc: [value, total, R]}, 750, "elastic");
-            }
-        }
+        return {draw: function(start, end) {
+            var circle = paper.path().attr(param).attr({arc: [start, end, 1, radius, Math.random() * 255, Math.random() * 255, Math.random() * 255]});;
+            circle.show();
+        }, animate: function(start, end, duration) {
+            var circle = paper.path().attr(param).attr({arc: [start, end, 1, radius, Math.random() * 255, Math.random() * 255, Math.random() * 255]});;
+            circle.animate({arc: [start, end, 1, radius, Math.random() * 255, Math.random() * 255, Math.random() * 255 ]}, 5000, ">");
+        }};
     }
 
-    (function () {
-        updateVal(26, 60, 200, sec, 2);
-        setTimeout(arguments.callee, 1000);
-        init = false;
-    })();
+    var prettyCircle1 = makePrettyCircle(600, 400, 42, 80);
+
+    $.get('/get_folder_data', function(data) {
+        console.log(data.bytes);
+        var start = 0;
+
+        for (var i in data.children) {
+            display(data.children[i], $("#tree"));
+
+            var end = start + data.children[i].bytes / data.bytes;
+            prettyCircle1.draw(start, end);
+            start = end;
+        }
+        $( "#tree, .folder" ).accordion(
+            { autoHeight: false,
+              collapsible: true,
+              animated: false,
+              active: false });
+    });
+
+    display = function(item, parent) {
+        var name = item.path.split('/').pop();
+        var elem = $("<h3>" + name + "</h3>")
+
+        parent.append(elem);
+        var innerdiv = $("<div></div>").addClass("folder");
+
+        if (item.is_dir) {
+            elem.addClass("directory");
+
+            for (var i in item.children) {
+                display(item.children[i], innerdiv);
+            }
+
+        } else {
+            elem.addClass("file");   
+        }
+        parent.append(innerdiv);        
+    }
+
+    $("#sidebar").mouseleave(function(e) {
+        $(this).stop();
+    });
+
+    var paper = Raphael("holder", $(window).width(), $(window).height());
+
+    var makePrettyCircle = function(x, y, width, radius) {
+        var param = {"stroke-width": width};
+
+        paper.customAttributes.arc = function (start, end, total, radius, R, G, B) {
+            var startAngle = start / total * 2 * Math.PI;
+            var endAngle = end / total * 2 * Math.PI;
+            var path = [["M", x + radius * Math.cos(startAngle), y + radius * Math.sin(startAngle)],
+                        ["A", radius, radius, 0, +((end - start) / total > 0.5), 1, x + radius * Math.cos(endAngle), y + radius * Math.sin(endAngle)]];
+            return {path: path, stroke: "rgb(".concat(R, ',', G, ',', B, ')')};
+        };
+
+        return {draw: function(start, end) {
+            var circle = paper.path().attr(param).attr({arc: [start, end, 100, radius, Math.random() * 255, Math.random() * 255, Math.random() * 255]});;
+            circle.show();
+        }, animate: function(start, end, duration) {
+            var circle = paper.path().attr(param).attr({arc: [start, end, 100, radius, Math.random() * 255, Math.random() * 255, Math.random() * 255]});;
+            circle.animate({arc: [start, end, 100, radius, Math.random() * 255, Math.random() * 255, Math.random() * 255 ]}, 5000, ">");
+        }};
+    }
+
+    var prettyCircle1 = makePrettyCircle(600, 400, 42, 80);
+    prettyCircle1.draw(15, 30);
+    prettyCircle1.draw(30, 60);
+    prettyCircle1.draw(60, 90);
+    prettyCircle1.draw(90, 15);
+
+    var folderName = paper.text(600, 400, "Folder Name");
+    folderName.attr({"font": "Verdana", "font-size": "20px"});
+    folderName.show();
 });
