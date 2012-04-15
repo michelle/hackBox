@@ -1,22 +1,23 @@
 $(document).ready(function() {
 
-    var opts = {
-        lines: 15, // The number of lines to draw
-        length: 0, // The length of each line
-        width: 8, // The line thickness
-        radius: 40, // The radius of the inner circle
-        rotate: 0, // The rotation offset
-        color: '#000', // #rgb or #rrggbb
-        speed: 1, // Rounds per second
-        trail: 60, // Afterglow percentage
-        shadow: false, // Whether to render a shadow
-        hwaccel: false, // Whether to use hardware acceleration
-        className: 'spinner', // The CSS class to assign to the spinner
-        zIndex: 2e9, // The z-index (defaults to 2000000000)
-        top: 'auto', // Top position relative to parent in px
-        left: 'auto' // Left position relative to parent in px
-    };
 
+
+var opts = {
+  lines: 15, // The number of lines to draw
+  length: 0, // The length of each line
+  width: 8, // The line thickness
+  radius: 40, // The radius of the inner circle
+  rotate: 0, // The rotation offset
+  color: '#000', // #rgb or #rrggbb
+  speed: 1, // Rounds per second
+  trail: 60, // Afterglow percentage
+  shadow: false, // Whether to render a shadow
+  hwaccel: false, // Whether to use hardware acceleration
+  className: 'spinner', // The CSS class to assign to the spinner
+  zIndex: 2e9, // The z-index (defaults to 2000000000)
+  top: 'auto', // Top position relative to parent in px
+  left: 'auto' // Left position relative to parent in px
+};
     var target = document.getElementById('sidebar');
     var spinner = new Spinner(opts).spin(target);
 
@@ -24,48 +25,47 @@ $(document).ready(function() {
     
     var root;
 
-    var folderHistory = new Array();
+    var folderHistory = [];
 
     var mix = {red: 255, green: 244, blue: 74};
 
     var pushFolderHistory = function(data) {
-//        console.log("push1", JSON.stringify(folderHistory), folderHistory.length);
+        console.log("push");
         if (folderHistory.length == 4) {
-            folderHistory.shift();
+            folderHistory[0] = folderHistory[1];
+            folderHistory[1] = folderHistory[2];
+            folderHistory[2] = folderHistory[3];
+            folderHistory[3] = data;
+        } else {
+            folderHistory.push(data);
         }
-//        console.log("push2", JSON.stringify(folderHistory), folderHistory.length);
-        folderHistory.push(data);
-//        console.log("push3", JSON.stringify(folderHistory), folderHistory.length);
+        console.log("push: ", folderHistory);
     }
 
     var popFolderHistory = function(index) {
-//        console.log("Pop1", JSON.stringify(folderHistory)[2], folderHistory.length, index);
-        for (var i = folderHistory.length - 1; i > index; i--) {
-            folderHistory.pop();
-//            console.log("Pop1b", folderHistory, folderHistory.length, index);
-        }
-//        console.log("Pop2", folderHistory, folderHistory.length, index);
-
-        if (folderHistory.length == 0) {
-//            console.log("Pop2a", folderHistory, folderHistory.length, index);
+        console.log("Pop:", folderHistory);
+        console.log(index);
+        if (!folderHistory[index]) {
             redrawAll(root);
         } else {
-//            console.log("Pop2b", folderHistory, folderHistory.length, index);
-            redrawAll(folderHistory.pop());
+            redrawAll(folderHistory[index]);
         }
-//        console.log("Pop3", folderHistory, folderHistory.length, index);
+        for (var i = folderHistory.length; i > index; i--) {
+            console.log('pooping', folderHistory.pop());
+        }
     }
 
     var drawFolderHistory = function(x0, y0) {
         var startAngle = -70;
 
-//        console.log("draw1", folderHistory, folderHistory.length);
-        for (var i = 0; i < folderHistory.length; i++) {
-//            console.log("draw2", folderHistory, folderHistory.length);
-            var x = x0 + 270 * Math.cos(startAngle);
-            var y = y0 + 270 * Math.sin(startAngle);
+        console.log("prepare to draw:", folderHistory);
+        for (var i in folderHistory) {
+            var x = x0 + 250 * Math.cos(startAngle);
+            var y = y0 + 250 * Math.sin(startAngle);
+
+            console.log("drawing", folderHistory[i], x, y);
             paper.setStart();
-//            drawPrettyCircle(x, y, folderHistory[i], true);
+            drawPrettyCircle(x, y, folderHistory[i], true);
             paper.circle(x, y, 40).attr({fill: "r(0.75, 0.25)#fff-#ccc", stroke: "rgb(188, 188, 188)"});
             var st = paper.setFinish();
             st.attr({transform: "s0.4 0.4 " + x + " " + y, "stroke-width": 20});
@@ -75,12 +75,12 @@ $(document).ready(function() {
                     .mouseout(function () {
                         _st.stop().animate({"stroke-opacity": 1}, 500, "elastic"); })
                     .click(function() {
-//                        console.log("event fired", folderHistory);
+                        console.log("event fired", folderHistory);
                         popFolderHistory(id);
                     });
             })(i, st);
 
-            startAngle += 35 / 180 * Math.PI;
+            startAngle += 40 / 180 * Math.PI;
         }
     }
     
@@ -188,7 +188,7 @@ $(document).ready(function() {
     }
 
     var redrawAll = function(data) {
-//        console.log(data);
+        console.log(data);
         paper.clear();
         var x = 3 * $(window).width() / 5;
         var y = $(window).height() / 2;
@@ -201,7 +201,7 @@ $(document).ready(function() {
     }
 
     var getFolderName = function(path) {
-//        console.log("path: ", path);
+        console.log("path: ", path);
         if (path == "/") {
             return "Dropbox";
         } else {
@@ -277,7 +277,7 @@ $(document).ready(function() {
     });
 
     $.get('/get_folder_data', function(data) {
-//        console.log(data);
+        console.log(data);
         root = data;
 
         display(data, $("#tree"));
