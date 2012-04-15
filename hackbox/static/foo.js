@@ -23,6 +23,10 @@ $(document).ready(function() {
                 .attr("title", data.path.split('/').pop())
                 .attr({arc: [start, end, radius, Math.random() * 255, Math.random() * 255, Math.random() * 255]})
                 .data("folder", data)
+                .mouseover(function () {
+                    this.stop().animate({"stroke-opacity": 0.5, "stroke-width": 45}, 500, "elastic"); })
+                .mouseout(function () {
+                    this.stop().animate({"stroke-opacity": 1, "stroke-width": 40}, 500, "elastic"); })
                 .click(function() {
                     redrawAll(data);
                 });
@@ -85,8 +89,8 @@ $(document).ready(function() {
         paper.clear();
         var x = 3 * $(window).width() / 5;
         var y = $(window).height() / 2;
-        drawPrettyCircle(x, y, data);
         drawPrettyButton(x, y, data);
+        drawPrettyCircle(x, y, data);
         drawFolderName(x, y, data);
         updateDetails(data);
     }
@@ -105,7 +109,7 @@ $(document).ready(function() {
     }
 
     var updateDetails = function(item) {
-        $("#size").html(Math.round(bytesToMB(item.bytes)));
+        $("#size").html(item.size);
         if (item.modified != undefined) {
             var date = item.modified.split(' ');
             $("#modified").html(date[1] + " " + date[2] + " " + date[3]);
