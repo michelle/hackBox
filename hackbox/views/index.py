@@ -26,7 +26,8 @@ def auth(): # TODO change this to "obtain_access" later
 def index():
     user = helper.get_or_add_user(session['client'])
     return render_template('index.html', user=user,
-                           data=get_folder_data(session))
+                           data=helper.get_folder_data(session),
+                           userinfo=helper.get_account_info(session))
 
 @app.route('/share/<type_>')
 @app.route('/share/')
@@ -45,19 +46,4 @@ def share(type_=None):
         files = filter(filter_fn, files)
     return render_template('share.html', files=files)
 
-def get_folder_data(session):
-    client = session['client']
-    user = helper.get_or_add_user(client)
-    helper.update_files(client, user=user)
-    if 'folder_data' not in session:
-        folder_data = helper.get_nested_folder(client)
-    else:
-        older_data = session['folder_data']
-    print json.dumps(folder_data)
-    return json.dumps(folder_data)
 
-@app.route('/get_account_info')
-@helper.dropbox_auth_required
-def get_account_info():
-    client = session['client']
-    return jsonify(client.account_info())
