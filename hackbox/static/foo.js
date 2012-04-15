@@ -29,24 +29,27 @@ $(document).ready(function() {
 
     var paper = Raphael("holder", 600, 600);
 
-    paper.customAttributes.arc = function (value, total, radius, R, G, B) {
-        var alpha = value / total * 360;
-        var a = (90 - alpha) * Math.PI / 180;
-        var x = 300 + radius * Math.cos(a);
-        var y = 300 - radius * Math.sin(a);
-        var path = [["M", 300, 300 - radius], ["A", radius, radius, 0, +(alpha > 180), 1, x, y]];
-
-        return {path: path, stroke: "rgb(".concat(R, ',', G, ',', B, ')')};
-    };
 
     var makePrettyCircle = function(x, y, width, radius) {
         var param = {"stroke-width": width};
-        var circle = paper.path().attr(param).attr({arc: [0, 100, radius, Math.random() * 255, Math.random() * 255, Math.random() * 255]});;
-        return {draw: function(start, percent) {
-            circle.animate({arc: [99.99999, 100, radius, Math.random() * 255, Math.random() * 255, Math.random() * 255 ]}, 500, ">");
+
+        paper.customAttributes.arc = function (start, end, total, radius, R, G, B) {
+            var startAngle = (90 - start / total * 360) * Math.PI / 180;
+            var endAngle = (90 - end / total * 360) * Math.PI / 180;
+            var path = [["M", x + radius * Math.cos(startAngle), y - radius * Math.sin(startAngle)],
+                        ["A", radius, radius, 0, +((end - start) / total * 360 > 180), 1, x + radius * Math.cos(endAngle), y - radius * Math.sin(endAngle)]];
+
+            return {path: path, stroke: "rgb(".concat(R, ',', G, ',', B, ')')};
+        };
+
+        return {draw: function(start, end) {
+            var circle = paper.path().attr(param).attr({arc: [start, start, 100, radius, Math.random() * 255, Math.random() * 255, Math.random() * 255]});;
+            circle.animate({arc: [start, end, 100, radius, Math.random() * 255, Math.random() * 255, Math.random() * 255 ]}, 5000, ">");
         }};
     }
 
-    var prettyCircle = makePrettyCircle(300, 300, 42, 80);
-    prettyCircle.draw(0, 50);
+    var prettyCircle1 = makePrettyCircle(300, 300, 42, 80);
+    prettyCircle1.draw(25, 60);
+    var prettyCircle2 = makePrettyCircle(300, 300, 42, 80);
+    prettyCircle2.draw(60, 90);
 });
