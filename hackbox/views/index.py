@@ -38,12 +38,15 @@ def share(type_=None):
 
     user = helper.get_or_add_user(client)
     helper.update_files(client, user=user)
-    files = helper.get_public_files()
 
-    if type_ or search:
+    if type_ and type_ in helper.ACCEPTABLE_TYPES:
+        files = helper.TYPE_GETTER[type_]()
+    else:
+        files = helper.get_public_files()
+
+    if search:
+        print files
         def filter_fn( file_ ):
             return ( not type_ or type_ == file_['type'] ) and ( not search or search.lower() in file_['path'].lower() )
         files = filter(filter_fn, files)
     return render_template('share.html', files=files)
-
-
