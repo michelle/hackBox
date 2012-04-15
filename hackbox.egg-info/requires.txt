@@ -1,3 +1,0 @@
-Flask
-dropbox
-hurry.filesize

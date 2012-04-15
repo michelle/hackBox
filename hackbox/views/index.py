@@ -1,6 +1,7 @@
-from flask import redirect, render_template, session, request, jsonify
+from flask import redirect, render_template, session, request, jsonify, url_for
 import dropbox
 from hackbox import app
+from hackbox.helper import nested_list, with_folder_size, dropbox_auth_required
 
 @app.route('/login/')
 def login():
@@ -18,12 +19,16 @@ def auth():
     return redirect('/')
         
 @app.route('/')
+@dropbox_auth_required
 def index():
-    if 'client' not in session:
-        return redirect('/login/')
-    else:
-        return render_template('index.html')
+    return render_template('index.html')
         
 @app.route('/get_folder_data')
+@dropbox_auth_required
 def get_folder_data():
-    return jsonify({})
+    client = session['client']
+    if 'folder_data' not in session:
+        folder_data = nested_list(with_folder_size(client.delta()["entries"]))
+    else:
+        folder_data = session['folder_data']
+    return jsonify(folder_data)

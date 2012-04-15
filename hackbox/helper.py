@@ -1,8 +1,20 @@
 import os
-from collections import defaultdict
 import dropbox
+from collections import defaultdict
 from hackbox import app
 from hurry.filesize import size, alternative
+from functools import wraps
+from flask import url_for, session, redirect
+
+
+def dropbox_auth_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'client' not in session or 'sess' not in session:
+            return redirect(url_for('login'))
+        return f(*args, **kwargs) 
+    return decorated_function
+
 
 def get_folder_list_and_file_name(path):
     folders = []
