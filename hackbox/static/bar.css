@@ -7,10 +7,12 @@ body, html {
 
 #sidebar {
   position: fixed;
-  height: 500px;
+  height: 100%;
   width: 200px;
+  padding: 10px;
   overflow: hidden;
 }
+
 
 #details {
 
