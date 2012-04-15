@@ -13,7 +13,6 @@ def dropbox_auth_required(f):
     def decorated_function(*args, **kwargs):
         if 'client' not in session or 'sess' not in session:
             return redirect(url_for('login'))
-        print session['client'].account_info()
         return f(*args, **kwargs) 
     return decorated_function
 
@@ -109,16 +108,26 @@ def get_public_files(client):
              for path, metadata in entries if
              not metadata['is_dir'] and (path.startswith('/public/') or path == '/public') ]
 
+acceptable_types = { 'audio',
+                     'image', }
+
 def save_public_files(user, client):
     files = []
+
+    for file_ in user['files']:
+        db.file.remove(file_)
+    
     for file_ in get_public_files(client):
-        files.append(insert_file(file_))
-    user['files'] = files
+        if file_['mime_type'].split('/')[0] in acceptable_types:
+            files.append(insert_file(user, file_))
+
     db.users.update({'uid': user['uid']}, {'$set': {'files': files}})
 
-def insert_file(file_):
-    db.files.insert(file_)
-    return file_
+def insert_file(user, file_):
+    file_['owner_id'] = user['uid']
+    file_['filename'] = file_['path'].split('/')[-1]
+    file_['type'] = file_['mime_type'].split('/')[0]
+    return db.file.insert( file_ )
 
 def get_or_add_user(client):
     account_info = client.account_info()

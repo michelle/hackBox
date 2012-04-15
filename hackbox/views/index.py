@@ -31,7 +31,7 @@ def index():
 def share():
     client = session['client']
     user = get_or_add_user(client)
-    files = list(db.files.find())
+    files = list(db.file.find())
     return render_template('share.html', files=files)
         
 @app.route('/get_folder_data')
@@ -43,3 +43,10 @@ def get_folder_data():
     else:
         folder_data = session['folder_data']
     return jsonify(folder_data)
+
+@app.route('/get_account_info')
+@dropbox_auth_required
+def get_account_info():
+    client = session['client']
+    return jsonify(client.account_info())
+

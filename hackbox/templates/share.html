@@ -5,6 +5,9 @@
   <body>
 {% for file_ in files %}
   <li>{{ file_ }}</li>
+  {% if file_['type'] == 'image' %}
+      <img src="http://dl.dropbox.com/u/{{file_['owner_id']}}/{{file_['filename']}}"/>
+  {% endif %}
 {% endfor %}
   </body>
 </html>
