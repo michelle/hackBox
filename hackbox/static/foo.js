@@ -106,10 +106,11 @@ $(document).ready(function() {
                 .attr(param)
                 .attr("title", data.path.split('/').pop())
                 .attr({arc: [start, end, radius, Math.random() * 255, Math.random() * 255, Math.random() * 255]})
-                .data("folder", data);
+                .data("folder", data)
+                .toBack();
             if (!isHistoryPrettyCircle) {
                 circle.mouseover(function () {
-                    this.stop().animate({"stroke-opacity": 0.5, "stroke-width": 45}, 500, "elastic").attr("cursor", "pointer");
+                    this.stop().animate({"stroke-opacity": 0.5, "stroke-width": 48}, 500, "elastic").attr("cursor", "pointer");
                     $("h3[assoc='" + this.data("assoc") + "']").addClass("selected");
                     updateDetails(this.data("folder"));
                 }).mouseout(function () {
@@ -127,7 +128,8 @@ $(document).ready(function() {
                 .attr(param)
                 .attr("title", data.path.split('/').pop())
                 .attr({arc: [start, end, radius, Math.random() * 255, Math.random() * 255, Math.random() * 255]})
-                .data("folder", data);
+                .data("folder", data)
+                .toBack();
             if (!isHistoryPrettyCircle) {
                 circle.mouseover(function () {
                     pushFolderHistory(parentData);
@@ -277,8 +279,8 @@ $(document).ready(function() {
     });
 
     $.get('/get_folder_data', function(data) {
-//        console.log(data);
         spinner.stop()
+
         root = data;
 
         display(data, $("#tree"));
@@ -298,7 +300,6 @@ $(document).ready(function() {
 			    + Math.round((user.quota_info.normal + user.quota_info.shared)/user.quota_info.quota * 100) + "%</strong> of your space and have <strong>"
 			    + Math.round(bytesToMB(user.quota_info.quota - (user.quota_info.normal + user.quota_info.shared))) + " MB</strong> remaining.");
     });
-
 
     $("#sidebar").mouseleave(function(e) {
         $(this).stop();
