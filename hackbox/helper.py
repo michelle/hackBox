@@ -115,7 +115,7 @@ acceptable_types = { 'audio',
 def save_public_files(user, client):
     files = []
 
-    for file_ in user['files']:
+    for file_ in user.get('files', []):
         db.file.remove(file_)
     
     for file_ in get_public_files(client):
