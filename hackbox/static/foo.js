@@ -25,9 +25,11 @@ $(document).ready(function() {
         }
     });
 
+
     $("#sidebar").mouseleave(function(e) {
         $(this).stop();
     });
+
 
     var paper = Raphael("holder", $(window).width(), $(window).height());
 
@@ -45,39 +47,40 @@ $(document).ready(function() {
         return {draw: function(start, end) {
             var circle = paper.path()
                 .attr(param)
+                .attr("title", data.path.split('/').pop())
                 .attr({arc: [start, end, 1, radius, Math.random() * 255, Math.random() * 255, Math.random() * 255]})
                 .data("folder", data)
                 .click(function() {
                     drawPrettyCircle(x, y, data);
-                    updateDetails(data);
-                    console.log(data);
                 });
             circle.show();
         }, animate: function(start, end, duration) {
             var circle = paper.path()
                 .attr(param)
+                .attr("title", data.path.split('/').pop())
                 .attr({arc: [start, end, 1, radius, Math.random() * 255, Math.random() * 255, Math.random() * 255]})
                 .data("folder", data)
                 .click(function() {
                     drawPrettyCircle(x, y, data);
-                    updateDetails(data);
-
-                    console.log(data);
                 });
-            circle.animate({arc: [start, end, 1, radius, Math.random() * 255, Math.random() * 255, Math.random() * 255 ]}, 5000, ">");
+            circle.animate({arc: [start, end, 1, radius, Math.random() * 255, Math.random() * 255, Math.random() * 255 ]}, 1000, "backOut");
         }};
     }
 
-    var currentFolder;
-
     var drawPrettyCircle = function(x, y, data) {
+        paper.clear()
         var start = 0;
         for (var i in data.children) {
             var folderArc = makeFolderArc(x, y, 42, 80, data.children[i]);
             var end = start + data.children[i].bytes / data.bytes;
-            folderArc.draw(start, end);
+            folderArc.draw(start, end, 500);
             start = end;
         }
+        var folderName = paper.text(3*$(window).width()/5, $(window).height()/2, currentFolderStr);
+        folderName.attr({"font": "Open Sans", "font-size": "12px", "font-weight": "700"});
+
+        folderName.show();
+        updateDetails(data);
     }
 
     $.get('/get_folder_data', function(data) {
@@ -92,17 +95,16 @@ $(document).ready(function() {
         $( "#tree, .folder" ).accordion(
             { autoHeight: false,
               collapsible: true,
-              animated: false,
               active: false });
         currentFolder = data;
+        var folderName = paper.text(3*$(window).width()/5, $(window).height()/2, currentFolderStr);
+        folderName.attr({"font": "Open Sans", "font-size": "12px", "font-weight": "700"});
+
+        folderName.show();
         updateDetails(data);
     });
 
-    var currentFolder = "";
-    var folderName = paper.text(3*$(window).width()/5, $(window).height()/2, currentFolder);
-    folderName.attr({"font": "Open Sans", "font-size": "12px", "font-weight": "700"});
-
-    folderName.show();
+    var currentFolderStr = "";
 
     bytesToMB = function(bytes) {
         return bytes * (9.53674316 * Math.pow(10, -7));
@@ -112,11 +114,11 @@ $(document).ready(function() {
         //var attrs = $("")
         var paths = item.path.split('/');
         if (item.path == "/") {
-            currentFolder = "/";
+            currentFolderStr = "/";
         } else {
-            currentFolder = paths.pop();
+            currentFolderStr = paths.pop();
         }
-        folderName.attr("text", currentFolder);
+        folderName.attr("text", currentFolderStr);
 
         $("#size").html(Math.round(bytesToMB(item.bytes)));
         if (item.modified != undefined) {
@@ -138,11 +140,13 @@ $(document).ready(function() {
             for (var i in item.children) {
                 display(item.children[i], innerdiv);
             }
-            parent.append(innerdiv); 
         } else {
-            elem.addClass("file");   
-            parent.append(innerdiv); 
+            elem.addClass("file");      
         }
+        parent.append(innerdiv); 
+        elem.click(function() {
+            drawPrettyCircle(3*$(window).width()/5, $(window).height()/2, item);
+        });
     }
 
     $("#sidebar").mouseleave(function(e) {

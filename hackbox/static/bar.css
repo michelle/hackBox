@@ -21,12 +21,13 @@ body, html {
 
 #sidebar h3:focus, .folder h3:focus {
   outline: none;
+  background-color: #497364;
+  color: #fff;
 }
 
 
 #sidebar h3, .folder h3 {
   font-size: 12px;
-  border-right: 15px;
   margin: 0px;
   padding: 2px 5px;
 }
@@ -47,6 +48,7 @@ h1 {
 
 .folder {
   margin-left: 5px;
+  border-left: 3px solid #c2c2c2;
 }
 
 
@@ -68,12 +70,14 @@ h1 {
 
 .directory {
   cursor: pointer;
-  color: #21548c;
+  color: #6AA690;
 
 }
 
 .file {
-
+  color: #434343;
+  background-color: #f2f2f2;
+  border-bottom: 1px solid #fff;
 }
 
 .selected {
@@ -96,7 +100,7 @@ h1 {
 
 #name {
   position: absolute;
-  
+
 }
 
 #holder {
