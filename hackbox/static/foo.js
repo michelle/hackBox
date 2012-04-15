@@ -98,21 +98,31 @@ $(document).ready(function() {
         updateDetails(data);
     });
 
-    var currentFolder = "/";
+    var currentFolder = "";
     var folderName = paper.text(3*$(window).width()/5, $(window).height()/2, currentFolder);
     folderName.attr({"font": "Open Sans", "font-size": "12px", "font-weight": "700"});
 
     folderName.show();
 
+    bytesToMB = function(bytes) {
+        return bytes * (9.53674316 * Math.pow(10, -7));
+    }
+
     updateDetails = function(item) {
         //var attrs = $("")
         var paths = item.path.split('/');
-        if (paths.length == 0) {
+        if (item.path == "/") {
             currentFolder = "/";
         } else {
             currentFolder = paths.pop();
         }
         folderName.attr("text", currentFolder);
+
+        $("#size").html(Math.round(bytesToMB(item.bytes)));
+        if (item.modified != undefined) {
+            var date = item.modified.split(' ');
+            $("#modified").html(date[1] + " " + date[2] + " " + date[3]);
+        }
     }
 
     display = function(item, parent) {
