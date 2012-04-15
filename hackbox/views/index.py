@@ -19,7 +19,7 @@ def index():
         return render_template('hello.html', access_token="None")
     except KeyError as e:
         print e
-        redirect('/login/')
+        return redirect('/login/')
         
 @app.route('/get_folder_data')
 def get_folder_data():
