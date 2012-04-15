@@ -177,7 +177,7 @@ $(document).ready(function() {
         }
     });
 
-    (function(data){
+    $.get('/get_folder_data', function(data) {
         console.log(data);
 
         display(data, $("#tree"));
@@ -190,15 +190,15 @@ $(document).ready(function() {
             { disabled: true });
 
         redrawAll(data);
-    })(path_data);
+    });
 
-    
-    (function(user) {
+    $.get('/get_account_info', function(user) {
         $("#userinfo").html("Welcome, <strong>" + user.display_name + "</strong>. <br>You have <strong>" 
 			    + Math.round(bytesToMB(user.quota_info.quota)) + " MB</strong> of data total. <br>You are using <strong>"
 			    + Math.round((user.quota_info.normal + user.quota_info.shared)/user.quota_info.quota * 100) + "%</strong> of your space and have <strong>"
 			    + Math.round(bytesToMB(user.quota_info.quota - (user.quota_info.normal + user.quota_info.shared))) + " MB</strong> left.");
-    })(userinfo);
+    });
+
 
     $("#sidebar").mouseleave(function(e) {
         $(this).stop();
