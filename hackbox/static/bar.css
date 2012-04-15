@@ -3,35 +3,96 @@ a {outline: none;} /* Gets rid of Firefox's dotted borders */
 a img {border: none;} /* Gets rid of IE's blue borders */
 
 body, html {
+  font-family: 'Open Sans';
+  font-size: 14px;
+  background-color: #d4d4d4;
 }
 
 #sidebar {
   position: fixed;
   height: 100%;
-  width: 200px;
-  padding: 10px;
+  width: 220px;
   overflow: hidden;
+  top: 0px;
+  background-color: #fff;
+  border-right: 10px solid #c2c2c2;
+}
+
+#sidebar h3:focus, .folder h3:focus {
+  outline: none;
+}
+
+
+#sidebar h3, .folder h3 {
+  font-size: 12px;
+  border-right: 15px;
+  margin: 0px;
+  padding: 2px 5px;
+}
+
+#sidebar div {
+  font-size: 12px;
+}
+
+h1 {
+  color: #fff;
+  padding: 5px 10px;
+  font-weight: 700;
+  background-color: #6AA690;
+  text-transform: uppercase;
+  font-size: 20px;
+  margin: 0px;
+}
+
+.folder {
+  margin-left: 5px;
 }
 
 
 #details {
+  opacity: 0.85;
+  position: fixed;
+  border: 5px solid #fff;
+  background-color: #362f2d;
+  border-radius: 5px;
+  width: 200px;
+  height: 100px;
+  left: 250px;
+  top: 30px;
+  color: #fff;
+  padding: 10px;
+  font-size: 12px;
+  box-shadow: 0px 0px 5px #c3c3c3;
+}
 
+.directory {
+  cursor: pointer;
+  color: #21548c;
 
 }
 
-#down {
+.file {
 
 }
 
-#up {
-
+.selected {
+  background-color: #F2DC99;
 }
 
-#tree {
+#details strong {
+  color: #F2BC1B;
+  font-weight: 700;
+}
 
+#details:hover {
+  opacity: 0.9;
 }
 
 #height {
 
+}
+
+#holder {
+  margin-left: 400px;
 }
 

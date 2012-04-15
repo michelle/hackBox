@@ -1,7 +1,7 @@
 from flask import redirect, render_template, session, request, jsonify, url_for
 import dropbox
 from hackbox import app
-from hackbox.helper import nested_list, with_folder_size, dropbox_auth_required, save_public_files, post_auth
+from hackbox.helper import nested_list, with_folder_size, dropbox_auth_required, save_public_files, post_auth, get_or_add_user, get_nested_folder
 from hackbox.db import db
 
 @app.route('/login/')
@@ -23,11 +23,15 @@ def auth(): # TODO change this to "obtain_access" later
 @app.route('/')
 @dropbox_auth_required
 def index():
-    return render_template('index.html')
+    user = get_or_add_user(session['client'])
+    return render_template('index.html', user=user)
 
 @app.route('/share')
+@dropbox_auth_required
 def share():
-    files = list(db.file.find())
+    client = session['client']
+    user = get_or_add_user(client)
+    files = list(db.files.find())
     return render_template('share.html', files=files)
         
 @app.route('/get_folder_data')
@@ -35,7 +39,7 @@ def share():
 def get_folder_data():
     client = session['client']
     if 'folder_data' not in session:
-        folder_data = nested_list(with_folder_size(client.delta()["entries"]))
+        folder_data = get_nested_folder(client)
     else:
         folder_data = session['folder_data']
     return jsonify(folder_data)
