@@ -70,15 +70,15 @@ $(document).ready(function() {
 
     var drawFolderName = function(x, y, data) {
         var folderName = paper.text(x, y, getFolderName(data.path));
-        folderName.attr({"font": "Open Sans", "font-size": "12px", "font-weight": "700"});
+        folderName.attr({"font": "Open Sans", "font-size": "12px", "font-weight": "200"});
         folderName.show();
     }
 
     var drawPrettyButton = function(x, y, data) {
-        paper.circle(x, y, 60).attr({fill: "rgb(255, 255, 255)", stroke: "rgb(255, 255, 255)"});
-        paper.click(function() {
-            // FILL IN            
-        });
+        paper.circle(x, y, 60).attr({fill: "r(0.75, 0.25)#fff-#ccc", stroke: "rgb(188, 188, 188)"})
+            .click(function() {
+                // FILL IN            
+            });
     }
 
     var redrawAll = function(data) {
