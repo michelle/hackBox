@@ -163,7 +163,7 @@ $(document).ready(function() {
         }
     });
 
-    $.get('/get_folder_data', function(data) {
+    (function(data){
         console.log(data);
 
         display(data, $("#tree"));
@@ -176,7 +176,7 @@ $(document).ready(function() {
             { disabled: true });
 
         redrawAll(data);
-    });
+    })(path_data);
 
     $.get('/get_account_info', function(user) {
         $("#userinfo").html("Welcome, <strong>" + user.display_name + "</strong>. <br>You have <strong>" 
