@@ -4,7 +4,7 @@ from collections import defaultdict
 from hackbox import app
 from hurry.filesize import size, alternative
 from functools import wraps
-from flask import url_for
+from flask import url_for, session, redirect
 
 
 def dropbox_auth_required(f):
