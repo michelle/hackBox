@@ -66,7 +66,7 @@ $(document).ready(function() {
 
     var drawFolderName = function(x, y, data) {
         var folderName = paper.text(x, y, getFolderName(data.path));
-        folderName.attr({"font": "Open Sans", "font-size": "12px", "font-weight": "700"});
+        folderName.attr({"font": "Open Sans", "font-size": "12px", "font-weight": "200"});
         folderName.show();
     }
 
