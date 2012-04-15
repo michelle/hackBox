@@ -74,6 +74,7 @@ def nested_list(entries):
             processed_entry = metadata
             processed_entry['uncanonical_path'] = uncanonical_path
             dict_entries[path]['children'].append(processed_entry)
+        dict_entries[path]['children'].sort(key=lambda child : child['bytes'])
     return dict_entries['/']
 
 def get_nested_folder(client):
@@ -114,7 +115,7 @@ acceptable_types = { 'audio',
 def save_public_files(user, client):
     files = []
 
-    for file_ in user['files']:
+    for file_ in user.get('files', []):
         db.file.remove(file_)
     
     for file_ in get_public_files(client):
