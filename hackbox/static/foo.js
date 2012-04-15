@@ -1,10 +1,30 @@
 $(document).ready(function() {
 
+
+var opts = {
+  lines: 15, // The number of lines to draw
+  length: 0, // The length of each line
+  width: 8, // The line thickness
+  radius: 40, // The radius of the inner circle
+  rotate: 0, // The rotation offset
+  color: '#000', // #rgb or #rrggbb
+  speed: 1, // Rounds per second
+  trail: 60, // Afterglow percentage
+  shadow: false, // Whether to render a shadow
+  hwaccel: false, // Whether to use hardware acceleration
+  className: 'spinner', // The CSS class to assign to the spinner
+  zIndex: 2e9, // The z-index (defaults to 2000000000)
+  top: 'auto', // Top position relative to parent in px
+  left: 'auto' // Left position relative to parent in px
+};
+    var target = document.getElementById('sidebar');
+    var spinner = new Spinner(opts).spin(target);
+
     var paper = Raphael("holder", $(window).width(), $(window).height());
 
     var folderStack = new Array();
 
-    var mix = {red: 242, green: 188, blue: 27};
+    var mix = {red: 255, green: 244, blue: 74};
 
     var pushFolderStack = function(data) {
     }
@@ -29,14 +49,18 @@ $(document).ready(function() {
 
         return {draw: function(start, end) {
             var circle = paper.path()
+                .data("assoc", data.path)
                 .attr(param)
                 .attr("title", data.path.split('/').pop())
                 .attr({arc: [start, end, radius, Math.random() * 255, Math.random() * 255, Math.random() * 255]})
                 .data("folder", data)
                 .mouseover(function () {
-                    this.stop().animate({"stroke-opacity": 0.5, "stroke-width": 45}, 500, "elastic"); })
+                    this.stop().animate({"stroke-opacity": 0.5, "stroke-width": 45}, 500, "elastic");
+                    $("h3[assoc='" + this.data("assoc") + "']").addClass("selected");
+                    updateDetails(this.data("folder")); })
                 .mouseout(function () {
-                    this.stop().animate({"stroke-opacity": 1, "stroke-width": 40}, 500, "elastic"); })
+                    this.stop().animate({"stroke-opacity": 1, "stroke-width": 40}, 500, "elastic"); 
+                    $("h3[assoc='" + this.data("assoc") + "']").removeClass("selected"); })
                 .click(function() {
                     redrawAll(data);
                 });
@@ -82,7 +106,10 @@ $(document).ready(function() {
     }
 
     var drawFolderName = function(x, y, data) {
-        var folderName = paper.text(x, y, getFolderName(data.path));
+        var concatName = getFolderName(data.path);
+        if (concatName.length > 12)
+            concatName = concatName.substr(0, 12) + "...";
+        var folderName = paper.text(x, y, concatName);
         folderName.attr({"font": "Open Sans", "font-size": "12px", "font-weight": "200"});
         folderName.show();
     }
@@ -128,12 +155,20 @@ $(document).ready(function() {
             var date = item.modified.split(' ');
             $("#modified").html(date[1] + " " + date[2] + " " + date[3]);
         }
+        var filename;
+        if (item.path == "/") {
+            filename = "Dropbox";
+        } else {
+            filename = item.path.split('/').pop()
+        }
+        $("#filename").html(filename);
     }
 
     var display = function(item, parent) {
         var name = item.path.split('/').pop();
         var elem = $("<h3>" + name + "</h3>");
         if (item.path == "/") { elem = $("<h3>Dropbox</h3>"); }
+        elem.attr("assoc", item.path);
 
         parent.append(elem);
         var innerdiv = $("<div></div>").addClass("folder");
@@ -181,7 +216,7 @@ $(document).ready(function() {
         console.log(data);
 
         display(data, $("#tree"));
-
+        spinner.stop()
         $( ".folder" ).accordion(
             { autoHeight: false,
               collapsible: true,
