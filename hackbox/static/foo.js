@@ -28,27 +28,21 @@ $(document).ready(function() {
     });
 
     var paper = Raphael("holder", 600, 600),
-    param = {stroke: "#fff", "stroke-width": 30};
+    param = {"stroke-width": 40};
 
-    // Custom Attribute
-    paper.customAttributes.arc = function (value, total, R) {
-        var alpha = 360 / total * value,
-        a = (90 - alpha) * Math.PI / 180,
-        x = 300 + R * Math.cos(a),
-        y = 300 - R * Math.sin(a),
-        color = "hsb(".concat(Math.round(R) / 200, ",", value / total, ", .75)"),
-        path;
-        if (total == value) {
-            path = [["M", 300, 300 - R], ["A", R, R, 0, 1, 1, 299.99, 300 - R]];
-        } else {
-            path = [["M", 300, 300 - R], ["A", R, R, 0, +(alpha > 180), 1, x, y]];
-        }
-        return {path: path, stroke: color};
+    paper.customAttributes.arc = function (value, total, radius, R, G, B) {
+        var alpha = value / total * 360;
+        var a = (90 - alpha) * Math.PI / 180;
+        var x = 300 + radius * Math.cos(a);
+        var y = 300 - radius * Math.sin(a);
+        var path = [["M", 300, 300 - radius], ["A", radius, radius, 0, +(alpha > 180), 1, x, y]];
+
+        return {path: path, stroke: "rgb(".concat(R, ',', G, ',', B, ')')};
     };
 
-    var sec = paper.path().attr(param).attr({arc: [0, 60, 200]});
+    var sec = paper.path().attr(param).attr({arc: [0, 60, 150, Math.random() * 255, Math.random() * 255, Math.random() * 255]});;
 
     (function () {
-        sec.animate({arc: [26, 60, 200]}, 900, ">");
+        sec.animate({arc: [26, 60, 150, Math.random() * 255, Math.random() * 255, Math.random() * 255 ]}, 2000, ">");
     })();
 });
