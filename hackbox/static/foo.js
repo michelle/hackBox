@@ -10,7 +10,7 @@ $(document).ready(function() {
         var position = (e.pageY - offset.top) / h;
 
         if (position < 0.03) {
-            currentPosition -= 10;
+            currentPosition -= 20;
             currentPosition = currentPosition < 0 ? 0 : currentPosition;
 
             $(this).stop().animate({ scrollTop: currentPosition }, 500, "linear");
@@ -18,7 +18,7 @@ $(document).ready(function() {
         }
 
         if (position > 0.97) {
-            currentPosition += 10;
+            currentPosition += 20;
             currentPosition = currentPosition > bottom ? bottom : currentPosition;
             $(this).stop().animate({ scrollTop: currentPosition }, 500, "linear");
 
@@ -49,6 +49,8 @@ $(document).ready(function() {
                 .data("folder", data)
                 .click(function() {
                     drawPrettyCircle(x, y, data);
+                    updateDetails(data);
+                    console.log(data);
                 });
             circle.show();
         }, animate: function(start, end, duration) {
@@ -58,6 +60,9 @@ $(document).ready(function() {
                 .data("folder", data)
                 .click(function() {
                     drawPrettyCircle(x, y, data);
+                    updateDetails(data);
+
+                    console.log(data);
                 });
             circle.animate({arc: [start, end, 1, radius, Math.random() * 255, Math.random() * 255, Math.random() * 255 ]}, 5000, ">");
         }};
@@ -93,11 +98,21 @@ $(document).ready(function() {
         updateDetails(data);
     });
 
+    var currentFolder = "/";
+    var folderName = paper.text(3*$(window).width()/5, $(window).height()/2, currentFolder);
+    folderName.attr({"font": "Open Sans", "font-size": "12px", "font-weight": "700"});
+
+    folderName.show();
+
     updateDetails = function(item) {
         //var attrs = $("")
-        if (data.path.split('/').length == 0) {
-
+        var paths = item.path.split('/');
+        if (paths.length == 0) {
+            currentFolder = "/";
+        } else {
+            currentFolder = paths.pop();
         }
+        folderName.attr("text", currentFolder);
     }
 
     display = function(item, parent) {
@@ -124,8 +139,5 @@ $(document).ready(function() {
         $(this).stop();
     });
 
-    var folderName = paper.text(3*$(window).width()/5, $(window).height()/2, "Folder Name");
-    folderName.attr({"font": "Open Sans", "font-size": "12px"});
 
-    folderName.show();
 });
