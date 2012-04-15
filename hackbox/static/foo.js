@@ -318,4 +318,11 @@ $(document).ready(function() {
     $("#sidebar").mouseleave(function(e) {
         $(this).stop();
     });
+
+
+    
+    //$.get('/share_folder', {'path':'public'}, function(data){ 
+    //  console.log(data);
+    //})
+
 });
