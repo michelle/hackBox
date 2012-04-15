@@ -16,9 +16,8 @@ def index():
     try:
         session['sess'].obtain_access_token(session['request_token'])
         client = session['client'] = dropbox.client.DropboxClient(session['sess'])
-        return render_template('hello.html', access_token="None")
-    except KeyError as e:
-        print e
+        return render_template('index.html', access_token="None")
+    except (KeyError, ResponseError):
         return redirect('/login/')
         
 @app.route('/get_folder_data')
