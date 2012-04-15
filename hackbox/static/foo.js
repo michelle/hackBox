@@ -44,14 +44,13 @@ var opts = {
     var popFolderHistory = function(index) {
         console.log("Pop:", folderHistory);
         console.log(index);
-        if (folderHistory.length == 0) {
+        if (!folderHistory[index]) {
             redrawAll(root);
         } else {
             redrawAll(folderHistory[index]);
-            
-            for (var i = folderHistory.length; i > index; i--) {
-                console.log('pooping', folderHistory.pop());
-            }
+        }
+        for (var i = folderHistory.length; i > index; i--) {
+            console.log('pooping', folderHistory.pop());
         }
     }
 
@@ -69,16 +68,16 @@ var opts = {
             paper.circle(x, y, 40).attr({fill: "r(0.75, 0.25)#fff-#ccc", stroke: "rgb(188, 188, 188)"});
             var st = paper.setFinish();
             st.attr({transform: "s0.4 0.4 " + x + " " + y, "stroke-width": 20});
-            (function(id) {
-                st.mouseover(function () {
-                    st.stop().animate({"stroke-opacity": 0.5}, 500, "elastic"); })
+            (function(id, _st) {
+                _st.mouseover(function () {
+                    _st.stop().animate({"stroke-opacity": 0.5}, 500, "elastic"); })
                     .mouseout(function () {
-                        st.stop().animate({"stroke-opacity": 1}, 500, "elastic"); })
+                        _st.stop().animate({"stroke-opacity": 1}, 500, "elastic"); })
                     .click(function() {
                         console.log("event fired", folderHistory);
                         popFolderHistory(id);
                     });
-            })(i);
+            })(i, st);
 
             startAngle += 40 / 180 * Math.PI;
         }
