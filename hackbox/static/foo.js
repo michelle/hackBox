@@ -23,8 +23,45 @@ $(document).ready(function() {
         }
     });
 
+    $.get('/get_folder_data', function(data) {
+        console.log(data);
+
+
+        for (var i in data.children) {
+            display(data.children[i], $("#tree"));
+        }
+        $( "#tree, .folder" ).accordion({ autoHeight: false,
+                                        collapsible: true,
+                                        animated: false,
+                                        active: false });
+    });
+
+    display = function(item, parent) {
+        var name = item.path.split('/').pop();
+        var elem = $("<h3>" + name + "</h3>")
+
+        parent.append(elem);
+        var innerdiv = $("<div></div>").addClass("folder");
+
+        if (item.is_dir) {
+            elem.addClass("directory");
+
+            for (var i in item.children) {
+                display(item.children[i], innerdiv);
+            }
+
+        } else {
+            elem.addClass("file");   
+        }
+        parent.append(innerdiv);        
+    }
+
     $("#sidebar").mouseleave(function(e) {
         $(this).stop();
     });
+
+
+
+
 
 });
