@@ -38,7 +38,7 @@ $(document).ready(function() {
 
     display = function(item, parent) {
         var name = item.path.split('/').pop();
-        var elem = $("<h3>" + name + "</h3>")
+        var elem = $("<h3>" + name + "</h3>");
 
         parent.append(elem);
         var innerdiv = $("<div></div>").addClass("folder");
@@ -49,11 +49,11 @@ $(document).ready(function() {
             for (var i in item.children) {
                 display(item.children[i], innerdiv);
             }
-
+            parent.append(innerdiv); 
         } else {
             elem.addClass("file");   
+            parent.append(innerdiv); 
         }
-        parent.append(innerdiv);        
     }
 
     $("#sidebar").mouseleave(function(e) {
@@ -61,7 +61,7 @@ $(document).ready(function() {
     });
 
 
-    var paper = Raphael("holder", 600, 600);
+    var paper = Raphael("holder", 400, 400);
 
 
     var makePrettyCircle = function(x, y, width, radius) {
