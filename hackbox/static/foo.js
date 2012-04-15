@@ -1,5 +1,4 @@
 $(document).ready(function() {
-    var currentFolder;
 
     currentPosition = 0;
     $("#sidebar").mousemove(function(e) {
@@ -34,49 +33,60 @@ $(document).ready(function() {
     var makeFolderArc = function(x, y, width, radius, data) {
         var param = {"stroke-width": width};
 
-        paper.customAttributes.arc = function (start, end, total, radius, R, G, B) {
-            var startAngle = start / total * 2 * Math.PI;
-            var endAngle = end / total * 2 * Math.PI;
+        paper.customAttributes.arc = function (start, end, radius, R, G, B) {
+            var startAngle = start * 2 * Math.PI;
+            var endAngle = end * 2 * Math.PI;
             var path = [["M", x + radius * Math.cos(startAngle), y + radius * Math.sin(startAngle)],
-                        ["A", radius, radius, 0, +((end - start) / total > 0.5), 1, x + radius * Math.cos(endAngle), y + radius * Math.sin(endAngle)]];
+                        ["A", radius, radius, 0, +((end - start) > 0.5), 1, x + radius * Math.cos(endAngle), y + radius * Math.sin(endAngle)]];
             return {path: path, stroke: "rgb(".concat(R, ',', G, ',', B, ')')};
         };
 
         return {draw: function(start, end) {
             var circle = paper.path()
                 .attr(param)
-                .attr({arc: [start, end, 1, radius, Math.random() * 255, Math.random() * 255, Math.random() * 255]})
+                .attr({arc: [start, end, radius, Math.random() * 255, Math.random() * 255, Math.random() * 255]})
                 .data("folder", data)
                 .click(function() {
                     drawPrettyCircle(x, y, data);
                     updateDetails(data);
-                    console.log(data);
                 });
             circle.show();
         }, animate: function(start, end, duration) {
             var circle = paper.path()
                 .attr(param)
-                .attr({arc: [start, end, 1, radius, Math.random() * 255, Math.random() * 255, Math.random() * 255]})
+                .attr({arc: [start, end, radius, Math.random() * 255, Math.random() * 255, Math.random() * 255]})
                 .data("folder", data)
                 .click(function() {
                     drawPrettyCircle(x, y, data);
                     updateDetails(data);
-
-                    console.log(data);
                 });
-            circle.animate({arc: [start, end, 1, radius, Math.random() * 255, Math.random() * 255, Math.random() * 255 ]}, 5000, ">");
+            circle.animate({arc: [start, end, radius, Math.random() * 255, Math.random() * 255, Math.random() * 255 ]}, 5000, ">");
         }};
     }
 
-    var currentFolder;
-
     var drawPrettyCircle = function(x, y, data) {
-        var start = 0;
+        drawPrettyLayer(x, y, data, 0, 1, 0);
+    }
+
+    var drawPrettyLayer = function(x, y, data, parentStart, parentEnd, depth) {
+        console.log(depth);
+
+        if (depth == 3) {
+            return;
+        }
+
+        var start = parentStart;
+
         for (var i in data.children) {
-            var folderArc = makeFolderArc(x, y, 42, 80, data.children[i]);
-            var end = start + data.children[i].bytes / data.bytes;
-            folderArc.draw(start, end);
-            start = end;
+            if (data.children[i].is_dir) {
+                var folderArc = makeFolderArc(x, y, 42, 80 + depth * 40, data.children[i]);
+                var end = start + data.children[i].bytes / data.bytes * (parentEnd - parentStart);
+                if (depth == 0 || end - start > 0.01) {
+                    folderArc.draw(start, end);
+                    drawPrettyLayer(x, y, data, start, end, depth + 1);
+                    start = end;
+                }
+            }
         }
     }
 
@@ -94,6 +104,7 @@ $(document).ready(function() {
               collapsible: true,
               animated: false,
               active: false });
+
         currentFolder = data;
         updateDetails(data);
     });
@@ -148,6 +159,4 @@ $(document).ready(function() {
     $("#sidebar").mouseleave(function(e) {
         $(this).stop();
     });
-
-
 });
