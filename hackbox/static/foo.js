@@ -31,7 +31,7 @@ $(document).ready(function() {
 
     var paper = Raphael("holder", $(window).width(), $(window).height());
 
-    var makePrettyCircle = function(x, y, width, radius, data) {
+    var makeFolderArc = function(x, y, width, radius, data) {
         var param = {"stroke-width": width};
 
         paper.customAttributes.arc = function (start, end, total, radius, R, G, B) {
@@ -73,9 +73,9 @@ $(document).ready(function() {
     var drawPrettyCircle = function(x, y, data) {
         var start = 0;
         for (var i in data.children) {
-            var prettyCircle = makePrettyCircle(x, y, 42, 80, data.children[i]);
+            var folderArc = makeFolderArc(x, y, 42, 80, data.children[i]);
             var end = start + data.children[i].bytes / data.bytes;
-            prettyCircle.draw(start, end);
+            folderArc.draw(start, end);
             start = end;
         }
     }
