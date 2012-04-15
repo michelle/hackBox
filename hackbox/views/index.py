@@ -1,7 +1,7 @@
 from flask import redirect, render_template, session, request, jsonify, url_for
 import dropbox
 from hackbox import app
-from hackbox.helper import nested_list, with_folder_size, dropbox_auth_required, save_public_files, post_auth, get_or_add_user, get_nested_folder
+import hackbox.helper as helper
 from hackbox.db import db
 
 @app.route('/login/')
@@ -21,31 +21,41 @@ def auth(): # TODO change this to "obtain_access" later
     return redirect('/')
         
 @app.route('/')
-@dropbox_auth_required
+@helper.dropbox_auth_required
 def index():
-    user = get_or_add_user(session['client'])
+    user = helper.get_or_add_user(session['client'])
     return render_template('index.html', user=user)
 
-@app.route('/share')
-@dropbox_auth_required
-def share():
+@app.route('/share/<type_>')
+@app.route('/share/')
+@helper.dropbox_auth_required
+def share(type_=None):
+    search = request.args.get('search')
     client = session['client']
-    user = get_or_add_user(client)
-    files = list(db.file.find())
+
+    user = helper.get_or_add_user(client)
+    helper.update_files(client, user=user)
+    files = helper.get_public_files(client)
+
+    if type_ or search:
+        def filter_fn( file_ ):
+            return ( not type_ or type_ == file_['type'] ) and ( not search or search.lower() in file_['path'].lower() )
+        files = filter(filter_fn, files)
     return render_template('share.html', files=files)
-        
+
 @app.route('/get_folder_data')
-@dropbox_auth_required
+@helper.dropbox_auth_required
 def get_folder_data():
     client = session['client']
+    helper.update_files(client)
     if 'folder_data' not in session:
-        folder_data = get_nested_folder(client)
+        folder_data = helper.get_nested_folder(client)
     else:
         folder_data = session['folder_data']
     return jsonify(folder_data)
 
 @app.route('/get_account_info')
-@dropbox_auth_required
+@helper.dropbox_auth_required
 def get_account_info():
     client = session['client']
     return jsonify(client.account_info())

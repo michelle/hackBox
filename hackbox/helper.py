@@ -7,6 +7,8 @@ from functools import wraps
 from flask import url_for, session, redirect
 from hackbox.db import db
 
+ACCEPTABLE_TYPES = { 'audio',
+                     'image', }
 
 def dropbox_auth_required(f):
     @wraps(f)
@@ -16,6 +18,9 @@ def dropbox_auth_required(f):
         return f(*args, **kwargs) 
     return decorated_function
 
+
+def get_readable_size(byte):
+    return size(byte, system=alternative)
 
 def get_folder_list_and_file_name(path):
     folders = []
@@ -33,52 +38,54 @@ def get_depth(path):
         return 0
     return len(folder_list)
 
-def with_folder_size(entries):
+def with_folder_size(files):
     folders_size = defaultdict(int)
-    new_entries = []
-    for entry in entries:
-        path, metadata = entry
-        if not metadata:
-            continue
-        if not metadata['is_dir']:
+    new_files = []
+    for file_ in files:
+        path = file_['lc_path']
+        if not file_['is_dir']:
             folder_list, file_name = get_folder_list_and_file_name(path)
             for folder in folder_list:
-                folders_size[folder] += int(metadata['bytes'])
-        new_entries.append([path, metadata])
-    for entry in new_entries:
-        path, metadata = entry
-        if not metadata:
-            continue
-        if metadata['is_dir']:
-            metadata['bytes'] = folders_size[path]
-            if metadata['bytes'] == 0:
-                print 'zero', path
-        metadata['size'] = size(metadata['bytes'], system=alternative)
-    new_entries.append(['/', {'is_dir': True, 'bytes': folders_size['/'], 'path': '/', 'size' : size(folders_size['/'], system=alternative)}])
-    return new_entries
+                folders_size[folder] += int(file_['bytes'])
+        new_files.append(file_)
 
-def nested_list(entries):
-    entries_by_depth = defaultdict(list)    
-    for entry in entries:
-        entries_by_depth[get_depth(entry[0])].append(entry)
-    dict_entries = dict(entries)
-    max_depth = max(entries_by_depth.keys())
+    for file_ in new_files:
+        path = file_['lc_path']
+        if file_['is_dir']:
+            file_['bytes'] = folders_size[path]
+        file_['size'] = get_readable_size(file_['bytes'])
+        db.files.update(file_, {'$set': {'size': file_['size']}})
+
+    #new_files.append(['/', {'is_dir': True, 'bytes': folders_size['/'], 'path': '/', 'size' : size(folders_size['/'], system=alternative)}])
+    return new_files
+
+def nested_list(files):
+    files_by_depth = defaultdict(list)    
+    for file_ in files:
+        files_by_depth[get_depth(file_['lc_path'])].append(file_)
+    dict_files = get_dict_files(files)
+    max_depth = max(files_by_depth.keys())
     for depth in range(max_depth, 0, -1):
-        e = entries_by_depth[depth]
+        e = files_by_depth[depth]
         children = defaultdict(list)
-        for entry in e:
-            uncanonical_path, metadata = entry
-            path, folder = os.path.split(uncanonical_path)
-            if 'children' not in dict_entries[path]:
-                dict_entries[path]['children'] = []
-            processed_entry = metadata
-            processed_entry['uncanonical_path'] = uncanonical_path
-            dict_entries[path]['children'].append(processed_entry)
-        dict_entries[path]['children'].sort(key=lambda child : -child['bytes'])
-    return dict_entries['/']
+        for file_ in e:
+            lc_path = file_['lc_path']
+            dict_files[lc_path].get('children', []).sort(key=lambda child : -child['bytes'])
+            path, folder = os.path.split(lc_path)
+            if 'children' not in dict_files[path]:
+                dict_files[path]['children'] = []
+            processed_entry = file_
+            dict_files[path]['children'].append(processed_entry)
+        #dict_files[path]['children'].sort(key=lambda child : -child['bytes'])
+    return dict_files['/']
+
+def strip_object_id(files):
+    for file_ in files:
+        del file_['_id']
+    return files
 
 def get_nested_folder(client):
-    return nested_list(with_folder_size(get_entries(client)))#.delta()["entries"]))
+    return nested_list(strip_object_id(with_folder_size(get_files(client))))
 
 def getClient():
     sess = dropbox.session.DropboxSession(app.config['APP_KEY'], 
@@ -90,45 +97,73 @@ def getClient():
     sess.obtain_access_token(request_token)
     return dropbox.client.DropboxClient(sess)
 
-def get_entries(client):
-    entries = []
-    cursor = None
+def get_dict_files(files):
+    dict_files = {}
+    for file_ in files:
+        dict_files[file_['lc_path']] = file_
+    return dict_files
+
+def update_files(client, uid=None, user=None):
+    user = user or db.users.find_one({'uid': uid or client.account_info()['uid']})
+    files = get_files(client, user=user)
+    dict_files = get_dict_files(files)
+    cursor = user.get('cursor', None)
     while True:
         delta = client.delta(cursor)
-        print len(delta["entries"])
-        entries.extend(delta["entries"])
+        entries = delta["entries"]
+        for path, file_ in entries:
+            if dict_files.get(path):
+                db.files.remove(dict_files[path])
+            if file_:
+                dict_files[path] = insert_file(user, file_, path)
+            else: # TODO recursively delete all children if file_ is None
+                pass
+                """for path, file_ in files.iteritems():
+                    if file_['lc_path'].startswith(path):
+                        db.files.remove(file_)"""
+        cursor = delta["cursor"]
         if not delta["has_more"]:
             break
-        cursor = delta["cursor"]
-    return entries
 
+    files = dict_files.values()
+
+    if '/' not in dict_files:
+        file_ = {}
+        file_['owner_id'] = user['uid']
+        file_['filename'] = ''
+        file_['type'] = 'folder'
+        file_['path'] = file_['lc_path'] = '/'
+        file_['is_dir'] = True
+        files.append(db.files.insert(file_))
+
+    db.users.update({'uid': user['uid']}, {'$set': {'files': files}}, safe=True)#, 'files': files}})
+    db.users.update({'uid': user['uid']}, {'$set': {'cursor': cursor}}, safe=True)#, 'files': files}})
+    
+def get_files(client=None, uid=None, user=None):
+    if not client:
+        return list(db.files.find())
+    user = user or db.users.find_one({'uid': uid or client.account_info()['uid']})
+    files = user.get('files', [])
+    return [db.files.find_one(file_) for file_ in files]
+
+def is_public_file(file_):
+    return not file_['is_dir'] \
+           and (file_['lc_path'].startswith('/public/') or file_['lc_path'] == '/public') \
+           and file_['mime_type'].split('/')[0] in ACCEPTABLE_TYPES
 
 def get_public_files(client):
-    entries = get_entries(client)#.delta()["entries"]
-    return [ dict(metadata.items() + [("uncanonical_path", path)])
-             for path, metadata in entries if
-             not metadata['is_dir'] and (path.startswith('/public/') or path == '/public') ]
+    return filter(is_public_file, get_files(client))
 
-acceptable_types = { 'audio',
-                     'image', }
-
-def save_public_files(user, client):
-    files = []
-
-    for file_ in user.get('files', []):
-        db.file.remove(file_)
-    
-    for file_ in get_public_files(client):
-        if file_['mime_type'].split('/')[0] in acceptable_types:
-            files.append(insert_file(user, file_))
-
-    db.users.update({'uid': user['uid']}, {'$set': {'files': files}})
-
-def insert_file(user, file_):
+def insert_file(user, file_, path):
     file_['owner_id'] = user['uid']
     file_['filename'] = file_['path'].split('/')[-1]
-    file_['type'] = file_['mime_type'].split('/')[0]
-    return db.file.insert( file_ )
+    if 'mime_type' in file_:
+        file_['type'] = file_['mime_type'].split('/')[0]
+    else:
+        file_['type'] = 'folder'
+    file_['path'] = file_['path']
+    file_['lc_path'] = path or file_['path'].lower()
+    return db.files.insert( file_ )
 
 def get_or_add_user(client):
     account_info = client.account_info()
@@ -142,9 +177,10 @@ def get_or_add_user(client):
             'email': email,
             'display_name': display_name,
             'uid': uid,
+            'cursor': None,
         })
     return db.users.find_one({'uid': uid})
 
 def post_auth(client):
     user = get_or_add_user(client) 
-    save_public_files(user, client)
+    update_files(client, user=user)
