@@ -53,13 +53,21 @@ def share(type_=None):
 @app.route('/get_folder_data')
 @helper.dropbox_auth_required
 def get_folder_data():
+    from time import time
+    prev = time()
     client = session['client']
+    print time() - prev; prev = time()
     user = helper.get_or_add_user(client)
+    print time() - prev; prev = time()
+    user = helper.get_or_add_user(client)
+    print time() - prev; prev = time()
     helper.update_files(client, user=user)
+    print time() - prev; prev = time()
     if 'folder_data' not in session:
         folder_data = helper.get_nested_folder(client)
     else:
         folder_data = session['folder_data']
+    print time() - prev; prev = time()
     return jsonify(folder_data)
 
 @app.route('/get_account_info')
