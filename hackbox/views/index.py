@@ -18,7 +18,7 @@ def login():
 def auth():
     session['sess'].obtain_access_token(session['request_token'])
     session['client'] = dropbox.client.DropboxClient(session['sess'])
-    helper.post_auth(session['client'])
+    #helper.post_auth(session['client'])
     return redirect('/')
         
 @app.route('/')
