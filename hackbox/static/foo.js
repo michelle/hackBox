@@ -1,5 +1,7 @@
 $(document).ready(function() {
 
+
+
     currentPosition = 0;
     $("#sidebar").mousemove(function(e) {
         var h = $(this).height();
@@ -69,12 +71,14 @@ $(document).ready(function() {
 
     var drawPrettyCircle = function(x, y, data) {
         paper.clear();
-        drawPrettyLayer(x, y, data, 0, 1, 0);
+        updateDetails(data);
         var folderName = paper.text(3*$(window).width()/5, $(window).height()/2, currentFolderStr);
         folderName.attr({"font": "Open Sans", "font-size": "12px", "font-weight": "700"});
 
         folderName.show();
-        updateDetails(data);
+        
+
+        drawPrettyLayer(x, y, data, 0, 1, 0);
     }
 
     var drawPrettyLayer = function(x, y, data, parentStart, parentEnd, depth) {
@@ -107,19 +111,21 @@ $(document).ready(function() {
             display(data.children[i], $("#tree"));
         }
 
-        drawPrettyCircle(3*$(window).width()/5, $(window).height()/2, data);
-
         $( "#tree, .folder" ).accordion(
             { autoHeight: false,
               collapsible: true,
               active: false });
 
+        drawPrettyCircle(3*$(window).width()/5, $(window).height()/2, data);
+
+        
+        updateDetails(data);
         currentFolder = data;
         var folderName = paper.text(3*$(window).width()/5, $(window).height()/2, currentFolderStr);
         folderName.attr({"font": "Open Sans", "font-size": "12px", "font-weight": "700"});
 
         folderName.show();
-        updateDetails(data);
+        
     });
 
     var currentFolderStr = "";
@@ -136,7 +142,6 @@ $(document).ready(function() {
         } else {
             currentFolderStr = paths.pop();
         }
-        folderName.attr("text", currentFolderStr);
 
         $("#size").html(Math.round(bytesToMB(item.bytes)));
         if (item.modified != undefined) {
