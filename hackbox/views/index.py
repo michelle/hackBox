@@ -31,7 +31,7 @@ def index():
 def share():
     client = session['client']
     user = get_or_add_user(client)
-    files = list(db.files.find())
+    files = list(db.file.find())
     return render_template('share.html', files=files)
         
 @app.route('/get_folder_data')
