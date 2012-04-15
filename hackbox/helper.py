@@ -83,3 +83,4 @@ def get_public_files(client):
     entries = client.delta()["entries"]
     return [ [path, metadata] for path, metadata in entries if
             not metadata['is_dir'] and (path.startswith('/public/') or path == '/public') ]
+

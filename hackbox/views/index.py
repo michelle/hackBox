@@ -2,6 +2,7 @@ from flask import redirect, render_template, session, request, jsonify, url_for
 import dropbox
 from hackbox import app
 from hackbox.helper import nested_list, with_folder_size, dropbox_auth_required
+from hackbox.db import db
 
 @app.route('/login/')
 def login():
@@ -12,10 +13,25 @@ def login():
     url = sess.build_authorize_url(request_token, oauth_callback="http://localhost:5000/auth")
     return redirect(url)
 
+def post_auth(client):
+    account_info = client.account_info()
+    email = account_info['email'] 
+    display_name = account_info['display_name']
+    uid = account_info['uid']
+    if len(db.users.find({'uid': uid})) > 0:
+        db.users.update({'uid': uid}, {'$set': {'email': email, 'display_name': display_name}})
+    else:
+        db.users.insert({
+            'email': email,
+            'display_name': display_name,
+            'uid': uid,
+        })
+
 @app.route('/auth')
-def auth():
+def auth(): # TODO change this to "obtain_access" later
     session['sess'].obtain_access_token(session['request_token'])
     session['client'] = dropbox.client.DropboxClient(session['sess'])
+    post_auth(session['client'])
     return redirect('/')
         
 @app.route('/')
@@ -32,3 +48,4 @@ def get_folder_data():
     else:
         folder_data = session['folder_data']
     return jsonify(folder_data)
+
