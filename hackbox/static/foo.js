@@ -34,22 +34,26 @@ $(document).ready(function() {
         var param = {"stroke-width": width};
 
         paper.customAttributes.arc = function (start, end, total, radius, R, G, B) {
-            var startAngle = (90 - start / total * 360) * Math.PI / 180;
-            var endAngle = (90 - end / total * 360) * Math.PI / 180;
-            var path = [["M", x + radius * Math.cos(startAngle), y - radius * Math.sin(startAngle)],
-                        ["A", radius, radius, 0, +((end - start) / total * 360 > 180), 1, x + radius * Math.cos(endAngle), y - radius * Math.sin(endAngle)]];
-
+            var startAngle = start / total * 2 * Math.PI;
+            var endAngle = end / total * 2 * Math.PI;
+            var path = [["M", x + radius * Math.cos(startAngle), y + radius * Math.sin(startAngle)],
+                        ["A", radius, radius, 0, +((end - start) / total > 0.5), 1, x + radius * Math.cos(endAngle), y + radius * Math.sin(endAngle)]];
             return {path: path, stroke: "rgb(".concat(R, ',', G, ',', B, ')')};
         };
 
         return {draw: function(start, end) {
-            var circle = paper.path().attr(param).attr({arc: [start, start, 100, radius, Math.random() * 255, Math.random() * 255, Math.random() * 255]});;
+            var circle = paper.path().attr(param).attr({arc: [start, end, 100, radius, Math.random() * 255, Math.random() * 255, Math.random() * 255]});;
+            circle.show();
+        }, animate: function(start, end, duration) {
+            var circle = paper.path().attr(param).attr({arc: [start, end, 100, radius, Math.random() * 255, Math.random() * 255, Math.random() * 255]});;
             circle.animate({arc: [start, end, 100, radius, Math.random() * 255, Math.random() * 255, Math.random() * 255 ]}, 5000, ">");
         }};
     }
 
     var prettyCircle1 = makePrettyCircle(300, 300, 42, 80);
-    prettyCircle1.draw(25, 60);
-    var prettyCircle2 = makePrettyCircle(300, 300, 42, 80);
-    prettyCircle2.draw(60, 90);
+    prettyCircle1.draw(15, 30);
+    prettyCircle1.draw(30, 60);
+    prettyCircle1.draw(60, 90);
+    prettyCircle1.draw(90, 15);
+
 });
