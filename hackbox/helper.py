@@ -75,6 +75,7 @@ def nested_list(files):
                 dict_files[path]['children'] = []
             processed_entry = file_
             dict_files[path]['children'].append(processed_entry)
+    dict_files['/'].get('children', []).sort(key=lambda child: -child['bytes'])
     return dict_files['/']
 
 def strip_object_id(files):
