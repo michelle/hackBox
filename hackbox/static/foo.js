@@ -181,7 +181,13 @@ $(document).ready(function() {
     var drawPrettyButton = function(x, y, data) {
         var button = paper.circle(x, y, 60).attr({fill: "r(0.75, 0.25)#fff-#ccc", stroke: "rgb(188, 188, 188)"});
         button.click(function() {
-            // FILL IN
+            if (data.path == "/") {
+                $("#menu").slideToggle(500);
+                $("#sharelink").html("Not available for /");
+            } else {
+                $("#menu").slideToggle(500);
+                shareStuff(data.path, function(result) { $("#sharelink").html(result.link.url); });
+            }
         });
         button.mouseover(function () {
             button.stop().animate({transform: "s1.05 1.05 " + x + " " + y}, 500, "elastic").attr("cursor", "pointer");
@@ -196,6 +202,7 @@ $(document).ready(function() {
         var x = 4 * $(window).width() / 7;
         var y = $(window).height() / 2;
 
+        $("#menu").slideUp(500);
         drawPrettyCircle(x, y, data, false);
         drawPrettyButton(x, y, data);
         drawFolderName(x, y, data);
@@ -217,7 +224,6 @@ $(document).ready(function() {
     }
 
     var updateDetails = function(item) {
-        console.log(item);
         if (item.size != undefined) {
             $("#size").html(item.size);
         } else {
@@ -308,7 +314,7 @@ $(document).ready(function() {
     });
 
     $.get('/get_account_info', function(user) {
-        $("#userinfo").html("Welcome, <strong>" + user.display_name + "</strong>.<br><br>You have <strong>" 
+        $("#userinfo").html("Welcome, <strong>" + user.display_name + "</strong>.<hr>You have <strong>" 
 			    + Math.round(bytesToMB(user.quota_info.quota)) + " MB</strong> of data total.<br>You are using <strong>"
 			    + Math.round((user.quota_info.normal + user.quota_info.shared)/user.quota_info.quota * 100) + "%</strong> of your space and have <strong>"
 			    + Math.round(bytesToMB(user.quota_info.quota - (user.quota_info.normal + user.quota_info.shared))) + " MB</strong> remaining.");
@@ -320,9 +326,11 @@ $(document).ready(function() {
     });
 
 
-    
-    //$.get('/share_folder', {'path':'public'}, function(data){ 
-    //  console.log(data);
-    //})
+    shareStuff = function(path, fn) {
+        $.get('/share_folder', {'path': path }, function(data){ 
+          fn(data);
+        })
+    }
+
 
 });
