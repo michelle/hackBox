@@ -18,14 +18,10 @@ body, html {
   border-right: 10px solid #c2c2c2;
 }
 
-#sidebar a {
-  text-decoration: none;
-  color: #21548c;
-}
-
 #sidebar h3:focus, .folder h3:focus {
   outline: none;
 }
+
 
 #sidebar h3, .folder h3 {
   font-size: 12px;
@@ -55,18 +51,28 @@ h1 {
 
 #details {
   opacity: 0.85;
+  position: fixed;
   border: 5px solid #fff;
   background-color: #362f2d;
   border-radius: 5px;
   width: 200px;
   height: 100px;
-  margin-left: 250px;
-  margin-top: 30px;
+  left: 250px;
+  top: 30px;
   color: #fff;
   padding: 10px;
-  position: relative;
   font-size: 12px;
   box-shadow: 0px 0px 5px #c3c3c3;
+}
+
+.directory {
+  cursor: pointer;
+  color: #21548c;
+
+}
+
+.file {
+
 }
 
 .selected {
@@ -84,5 +90,9 @@ h1 {
 
 #height {
 
+}
+
+#holder {
+  margin-left: 400px;
 }
 
