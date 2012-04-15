@@ -38,7 +38,7 @@ def share(type_=None):
 
     if type_ or search:
         def filter_fn( file_ ):
-            return ( not type_ or type_ == file_['type'] ) and ( not search or search in file_['path'] )
+            return ( not type_ or type_ == file_['type'] ) and ( not search or search.lower() in file_['path'].lower() )
         files = filter(filter_fn, files)
     return render_template('share.html', files=files)
 

@@ -10,13 +10,18 @@
     <a href='/share/'>All</a>
     <a href='/share/image'>Images</a>
     <a href='/share/audio'>Songs</a>
-    <a href='/share/docs'>Documents</a>
-
+    <a href='/share/docs'>Documents</a><br/><br/>
 
 {% for file_ in files %}
-  <li>{{ file_ }}</li>
   {% if file_['type'] == 'image' %}
-      <img src="http://dl.dropbox.com/u/{{file_['owner_id']}}/{{file_['filename']}}"/>
+      <img src="http://dl.dropbox.com/u/{{file_['owner_id']}}/{{file_['filename']}}" height="200"/><br/>
+      <p>{{file_['filename']}}</p>
+  {% elif file_['type'] == 'audio' %}
+      <audio controls="controls">
+	<source src="https://dl.dropbox.com/u/{{file_['owner_id']}}/{{file_['filename']}}" type="{{file_['mime_type']}}"/>
+      </audio>
+      <br/>
+    <p>{{file_['filename']}}</p>
   {% endif %}
 {% endfor %}
   </body>
