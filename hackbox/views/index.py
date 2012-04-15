@@ -15,7 +15,7 @@ def login():
     return redirect(url)
 
 @app.route('/auth')
-def auth(): # TODO change this to "obtain_access" later
+def auth():
     session['sess'].obtain_access_token(session['request_token'])
     session['client'] = dropbox.client.DropboxClient(session['sess'])
     helper.post_auth(session['client'])
@@ -33,19 +33,17 @@ def index():
 def share(type_=None):
     search = request.args.get('search')
     client = session['client']
-
     user = helper.get_or_add_user(client)
     helper.update_files(client, user=user)
 
     if type_:
-        if type_ in helper.TYPE_GETTER:#helper.ACCEPTABLE_TYPES:
+        if type_ in helper.TYPE_GETTER:
             files = helper.TYPE_GETTER[type_]()
         else:
             return redirect(url_for('share'))
     else:
         files = helper.get_public_files()
 
-    #print files
     if search:
         def filter_fn( file_ ):
             return ( not type_ or type_ == file_['type'] ) and ( not search or search.lower() in file_['path'].lower() )
