@@ -195,10 +195,10 @@ var bytesToMB = function(bytes) {
         var button = paper.circle(x, y, 60).attr({fill: "r(0.75, 0.25)#fff-#ccc", stroke: "rgb(188, 188, 188)"});
         button.click(function() {
             if (data.path == "/") {
-                $("#sharelink").html("Not available for /");
-                $("#menu").slideToggle(500);
+                $("#sharelink").html("Cannot share root folder: /");
+                $("#menu").slideToggle(300);
             } else {
-                $("#menu").slideToggle(500);
+                $("#menu").slideToggle(300);
                 shareStuff(data.path, function(result) { $("#sharelink").html(result.link.url); });
             }
         });
@@ -255,7 +255,6 @@ var display = function(item, parent) {
     var elem = $("<h3>" + name + "</h3>");
     if (item.path == "/") { elem = $("<h3>Dropbox</h3>"); }
     elem.attr("assoc", item.path);
-    elem.attr("display", "none");
 
     parent.append(elem);
     var innerdiv = $("<div></div>").addClass("folder");
@@ -273,7 +272,6 @@ var display = function(item, parent) {
     elem.click(function() {
         redrawAll(item);
     });
-    elem.fadeIn(500);
 }
 
 $(document).ready(function() {
@@ -311,6 +309,8 @@ $(document).ready(function() {
         currentFolder = data;
 
         display(data, $("#tree"));
+
+
         $( ".folder" ).accordion(
             { autoHeight: false,
               collapsible: true,
@@ -319,7 +319,8 @@ $(document).ready(function() {
             { disabled: true });
 
         redrawAll(data);
-
+        $("#details").fadeIn(500);
+        
         $(window).resize(function () {
             paper = Raphael("holder", $(window).width(), $(window).height());
             redrawAll(currentFolder);
