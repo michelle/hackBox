@@ -5,7 +5,7 @@ from hackbox import app
 from hurry.filesize import size, alternative
 from functools import wraps
 from flask import url_for, session, redirect
-
+from hackbox.db import db
 
 def dropbox_auth_required(f):
     @wraps(f)
@@ -81,6 +81,32 @@ def getClient():
 
 def get_public_files(client):
     entries = client.delta()["entries"]
-    return [ [path, metadata] for path, metadata in entries if
-            not metadata['is_dir'] and (path.startswith('/public/') or path == '/public') ]
+    return [ dict(metadata.items() + [("uncanonical_path", path)])
+             for path, metadata in entries if
+             not metadata['is_dir'] and (path.startswith('/public/') or path == '/public') ]
 
+def save_public_files(user, client):
+    files = []
+    for file_ in get_public_files(client):
+        files.append(insert_file(file_))
+    user['files'] = files
+    db.users.update({'uid': user['uid']}, {'$set': {'files': files}})
+
+def insert_file(file_):
+    pass
+
+def post_auth(client):
+    account_info = client.account_info()
+    email = account_info['email'] 
+    display_name = account_info['display_name']
+    uid = account_info['uid']
+    user = db.users.find_one({'uid': uid})
+    if user:
+        db.users.update({'uid': uid}, {'$set': {'email': email, 'display_name': display_name}})
+    else:
+        user = { 'email': email,
+                 'display_name': display_name,
+                 'uid': uid,
+                 }
+        db.users.insert(user)
+    save_public_files(user, client)
