@@ -1,20 +1,68 @@
 $(document).ready(function() {
 
     var paper = Raphael("holder", $(window).width(), $(window).height());
+    
+    var root;
 
-    var folderStack = new Array();
+    var folderHistory = [];
 
-    var pushFolderStack = function(data) {
+    var pushFolderHistory = function(data) {
+        console.log("push");
+        if (folderHistory.length == 4) {
+            folderHistory[0] = folderHistory[1];
+            folderHistory[1] = folderHistory[2];
+            folderHistory[2] = folderHistory[3];
+            folderHistory[3] = data;
+        } else {
+            folderHistory.push(data);
+        }
+        console.log("push: ", folderHistory);
     }
 
-    var popFolderStack = function(data) {
+    var popFolderHistory = function(index) {
+        console.log("Pop:", folderHistory);
+        console.log(index);
+        redrawAll(folderHistory[index]);
+        
+        for (var i = folderHistory.length; i > index; i--) {
+            console.log('pooping', folderHistory.pop());
+        }
+    }
+
+    var drawFolderHistory = function(x0, y0) {
+        var startAngle = 0;
+
+        console.log("prepare to draw:", folderHistory);
+        for (var i in folderHistory) {
+            var x = x0 + 250 * Math.cos(startAngle);
+            var y = y0 + 250 * Math.sin(startAngle);
+
+            console.log("drawing", folderHistory[i], x, y);
+            paper.setStart();
+            drawPrettyCircle(x, y, folderHistory[i], true);
+            paper.circle(x, y, 40).attr({fill: "r(0.75, 0.25)#fff-#ccc", stroke: "rgb(188, 188, 188)"});
+            var st = paper.setFinish();
+            st.attr({transform: "s0.4 0.4 " + x + " " + y, "stroke-width": 20});
+            (function(id) {
+                st.mouseover(function () {
+                    st.stop().animate({"stroke-opacity": 0.5}, 500, "elastic"); })
+                    .mouseout(function () {
+                        st.stop().animate({"stroke-opacity": 1}, 500, "elastic"); })
+                    .click(function() {
+                        console.log("event fired", folderHistory);
+                        popFolderHistory(id);
+                    });
+            })(i);
+
+            startAngle += 40 / 180 * Math.PI;
+        }
     }
     
     var makeRandomColor = function() {
         return "rgb(".concat(Math.random() * 255, ',', Math.random() * 255, ',', Math.random() * 255, ')');
     };
 
-    var makeFolderArc = function(x, y, width, radius, data) {
+    var makeFolderArc = function(x, y, width, radius, data, parentData, isHistoryPrettyCircle) {
         var param = {"stroke-width": width};
 
         paper.customAttributes.arc = function (start, end, radius, R, G, B) {
@@ -30,36 +78,40 @@ $(document).ready(function() {
                 .attr(param)
                 .attr("title", data.path.split('/').pop())
                 .attr({arc: [start, end, radius, Math.random() * 255, Math.random() * 255, Math.random() * 255]})
-                .data("folder", data)
-                .mouseover(function () {
+                .data("folder", data);
+            if (!isHistoryPrettyCircle) {
+                circle.mouseover(function () {
                     this.stop().animate({"stroke-opacity": 0.5, "stroke-width": 45}, 500, "elastic"); })
-                .mouseout(function () {
-                    this.stop().animate({"stroke-opacity": 1, "stroke-width": 40}, 500, "elastic"); })
-                .click(function() {
-                    redrawAll(data);
-                });
+                    .mouseout(function () {
+                        this.stop().animate({"stroke-opacity": 1, "stroke-width": 40}, 500, "elastic"); })
+                    .click(function() {
+                        pushFolderHistory(parentData);
+                        redrawAll(data);
+                    });
+            }
             circle.show();
         }, animate: function(start, end, duration) {
             var circle = paper.path()
                 .attr(param)
                 .attr("title", data.path.split('/').pop())
                 .attr({arc: [start, end, radius, Math.random() * 255, Math.random() * 255, Math.random() * 255]})
-                .data("folder", data)
-                .click(function() {
+                .data("folder", data);
+            if (!isHistoryPrettyCircle) {
+                circle.mouseover(function () {
+                    pushFolderHistory(parentData);
                     redrawAll(data);
                 });
+            }
             circle.animate({arc: [start, end, radius, Math.random() * 255, Math.random() * 255, Math.random() * 255 ]}, 1000, "backOut");
 
         }};
     }
 
-    var drawPrettyCircle = function(x, y, data) {
-        drawPrettyLayer(x, y, data, 0, 1, 0);
+    var drawPrettyCircle = function(x, y, data, isHistoryPrettyCircle) {
+        drawPrettyLayer(x, y, data, data, 0, 1, isHistoryPrettyCircle, 0);
     }
 
-    var drawPrettyLayer = function(x, y, data, parentStart, parentEnd, depth) {
-        console.log(depth);
-
+    var drawPrettyLayer = function(x, y, data, parentData, parentStart, parentEnd, isHistoryPrettyCircle, depth) {
         if (depth == 3) {
             return;
         }
@@ -68,11 +120,11 @@ $(document).ready(function() {
 
         for (var i in data.children) {
             if (data.children[i].is_dir) {
-                var folderArc = makeFolderArc(x, y, 41, 80 + depth * 40, data.children[i]);
+                var folderArc = makeFolderArc(x, y, 41, 80 + depth * 40, data.children[i], parentData, isHistoryPrettyCircle);
                 var end = start + data.children[i].bytes / data.bytes * (parentEnd - parentStart);
                 if (depth == 0 || end - start > 0.005) {
                     folderArc.draw(start, end);
-                    drawPrettyLayer(x, y, data.children[i], start, end, depth + 1);
+                    drawPrettyLayer(x, y, data.children[i], parentData, start, end, isHistoryPrettyCircle, depth + 1);
                     start = end;
                 }
             }
@@ -101,9 +153,11 @@ $(document).ready(function() {
         paper.clear();
         var x = 3 * $(window).width() / 5;
         var y = $(window).height() / 2;
-        drawPrettyCircle(x, y, data);
+
+        drawPrettyCircle(x, y, data, false);
         drawPrettyButton(x, y, data);
         drawFolderName(x, y, data);
+        drawFolderHistory(x, y);
         updateDetails(data);
     }
 
@@ -177,6 +231,7 @@ $(document).ready(function() {
 
     $.get('/get_folder_data', function(data) {
         console.log(data);
+        root = data;
 
         display(data, $("#tree"));
 
@@ -192,9 +247,9 @@ $(document).ready(function() {
 
     $.get('/get_account_info', function(user) {
         $("#userinfo").html("Welcome, <strong>" + user.display_name + "</strong>. <br>You have <strong>" 
-            + Math.round(bytesToMB(user.quota_info.quota)) + " MB</strong> of data total. <br>You are using <strong>"
-            + Math.round((user.quota_info.normal + user.quota_info.shared)/user.quota_info.quota * 100) + "%</strong> of your space and have <strong>"
-            + Math.round(bytesToMB(user.quota_info.quota - (user.quota_info.normal + user.quota_info.shared))) + " MB</strong> left.");
+                            + Math.round(bytesToMB(user.quota_info.quota)) + " MB</strong> of data total. <br>You are using <strong>"
+                            + Math.round((user.quota_info.normal + user.quota_info.shared)/user.quota_info.quota * 100) + "%</strong> of your space and have <strong>"
+                            + Math.round(bytesToMB(user.quota_info.quota - (user.quota_info.normal + user.quota_info.shared))) + " MB</strong> left.");
     });
 
     $("#sidebar").mouseleave(function(e) {
