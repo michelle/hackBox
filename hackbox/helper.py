@@ -2,6 +2,7 @@ import os
 from collections import defaultdict
 import dropbox
 from hackbox import app
+from hurry.filesize import size, alternative
 
 def get_folder_list_and_file_name(path):
     folders = []
@@ -33,7 +34,7 @@ def with_folder_size(entries):
         path, metadata = entry
         if metadata['is_dir']:
             metadata['bytes'] = folders_size[path]
-    #print folders_size['/']
+        metadata['size'] = size(metadata['bytes'], system=alternative)
     new_entries.append(['/', {'is_dir': True, 'bytes': folders_size['/'], 'path': '/'}])
     return new_entries
 
@@ -41,28 +42,20 @@ def nested_list(entries):
     entries_by_depth = defaultdict(list)    
     for entry in entries:
         entries_by_depth[get_depth(entry[0])].append(entry)
-    #print [entry[0] for entry in entries_by_depth[2]]
     dict_entries = dict(entries)
     max_depth = max(entries_by_depth.keys())
     for depth in range(max_depth, 0, -1):
         e = entries_by_depth[depth]
         children = defaultdict(list)
         for entry in e:
-            path, metadata = entry
-            path, folder = os.path.split(path)
+            uncanonical_path, metadata = entry
+            path, folder = os.path.split(uncanonical_path)
             if 'children' not in dict_entries[path]:
                 dict_entries[path]['children'] = []
-            dict_entries[path]['children'].append(entry)
-            #metadata['children'].append(entry)
-            #children[path].append(entry)
+            processed_entry = metadata
+            processed_entry['uncanonical_path'] = uncanonical_path
+            dict_entries[path]['children'].append(processed_entry)
     return dict_entries['/']
-
-def get_children(entries):
-    
-    return children
-        
-def sort_entry(entries):
-    return sorted(entries, key=lambda x: get_depth(x[1]['path']))
 
 def getClient():
     sess = dropbox.session.DropboxSession(app.config['APP_KEY'], 

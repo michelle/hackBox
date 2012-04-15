@@ -10,6 +10,7 @@ setup(
     install_requires=[
         'Flask',
         'dropbox',
+        'hurry.filesize',
         #'Flask-Compass',
         #'pymongo',
         #'pyjade==0.6.2',
