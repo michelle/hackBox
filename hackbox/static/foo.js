@@ -191,6 +191,7 @@ var bytesToMB = function(bytes) {
 }
 
 
+
     var drawPrettyButton = function(x, y, data) {
         var button = paper.circle(x, y, 60).attr({fill: "r(0.75, 0.25)#fff-#ccc", stroke: "rgb(188, 188, 188)"});
         button.click(function() {
@@ -198,8 +199,8 @@ var bytesToMB = function(bytes) {
                 $("#sharelink").html("Cannot share root folder: /");
                 $("#menu").slideToggle(300);
             } else {
-                $("#menu").slideToggle(300);
                 shareStuff(data.path, function(result) { $("#sharelink").html(result.link.url); });
+                $("#menu").slideToggle(300);
             }
         });
         button.mouseover(function () {
@@ -209,46 +210,46 @@ var bytesToMB = function(bytes) {
         });
     }
 
-    var redrawAll = function(data) {
-//        console.log(data);
-        paper.clear();
-        var x = 4 * $(window).width() / 7;
-        var y = $(window).height() / 2;
+var redrawAll = function(data) {
+    //        console.log(data);
+    paper.clear();
+    var x = 4 * $(window).width() / 7;
+    var y = $(window).height() / 2;
 
-        $("#menu").slideUp(500);
-        drawPrettyCircle(x, y, data, false);
-        drawPrettyButton(x, y, data);
-        drawFolderName(x, y, data);
-        drawFolderHistory(x, y, data);
-        updateDetails(data);
+    $("#menu").slideUp(500);
+    drawPrettyCircle(x, y, data, false);
+    drawPrettyButton(x, y, data);
+    drawFolderName(x, y, data);
+    drawFolderHistory(x, y, data);
+    updateDetails(data);
+}
+
+
+var updateDetails = function(item) {
+    if (item.size != undefined) {
+        $("#size").html(item.size);
+    } else {
+        $("#size").html("--");
+    }
+    
+    if (item.modified != undefined) {
+        var date = item.modified.split(' ');
+        $("#modified").html(date[1] + " " + date[2] + " " + date[3]);
+    } else {
+        $("#modified").html("--/--/----");
     }
 
+    var filename;
 
-    var updateDetails = function(item) {
-        if (item.size != undefined) {
-            $("#size").html(item.size);
-        } else {
-            $("#size").html("--");
-        }
-        
-        if (item.modified != undefined) {
-            var date = item.modified.split(' ');
-            $("#modified").html(date[1] + " " + date[2] + " " + date[3]);
-        } else {
-            $("#modified").html("--/--/----");
-        }
+    if (item.path == "/") {
+        filename = "Dropbox";
+    } else {
+        filename = item.path.split('/').pop()
+    }
+    $("#filename").html(filename);
 
-        var filename;
-
-        if (item.path == "/") {
-            filename = "Dropbox";
-        } else {
-            filename = item.path.split('/').pop()
-        }
-        $("#filename").html(filename);
-
-            $("#path").html(item.path);
-        }
+    $("#path").html(item.path);
+}
 
 var display = function(item, parent) {
     var name = item.path.split('/').pop();
@@ -341,7 +342,7 @@ $(document).ready(function() {
 
     shareStuff = function(path, fn) {
         $.get('/share_folder', {'path': path }, function(data){ 
-          fn(data);
+            fn(data);
         })
     }
 
