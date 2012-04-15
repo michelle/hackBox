@@ -85,15 +85,27 @@ def get_public_files(client):
              for path, metadata in entries if
              not metadata['is_dir'] and (path.startswith('/public/') or path == '/public') ]
 
+acceptable_types = {'audio/mp4' : 'music',
+                    'audio/mp3' : 'music',
+                    'application/pdf' : 'document', }
+
 def save_public_files(user, client):
     files = []
+
+    print user['files']
+    for file_ in user['files']:
+        db.file.remove(file_)
+    
     for file_ in get_public_files(client):
-        files.append(insert_file(file_))
-    user['files'] = files
+        if file_['mime_type'] in acceptable_types:
+            files.append(insert_file(user, file_))
+
     db.users.update({'uid': user['uid']}, {'$set': {'files': files}})
 
-def insert_file(file_):
-    pass
+def insert_file(user, file_):
+    file_['owner'] = user
+    file_['type'] = acceptable_types[file_['mime_type']]
+    return db.file.insert( file_ )
 
 def post_auth(client):
     account_info = client.account_info()
