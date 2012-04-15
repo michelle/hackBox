@@ -27,8 +27,7 @@ $(document).ready(function() {
         $(this).stop();
     });
 
-    var paper = Raphael("holder", 600, 600),
-    param = {"stroke-width": 40};
+    var paper = Raphael("holder", 600, 600);
 
     paper.customAttributes.arc = function (value, total, radius, R, G, B) {
         var alpha = value / total * 360;
@@ -40,9 +39,14 @@ $(document).ready(function() {
         return {path: path, stroke: "rgb(".concat(R, ',', G, ',', B, ')')};
     };
 
-    var sec = paper.path().attr(param).attr({arc: [0, 60, 150, Math.random() * 255, Math.random() * 255, Math.random() * 255]});;
+    var makePrettyCircle = function(x, y, width, radius) {
+        var param = {"stroke-width": width};
+        var circle = paper.path().attr(param).attr({arc: [0, 100, radius, Math.random() * 255, Math.random() * 255, Math.random() * 255]});;
+        return {draw: function(start, percent) {
+            circle.animate({arc: [99.99999, 100, radius, Math.random() * 255, Math.random() * 255, Math.random() * 255 ]}, 500, ">");
+        }};
+    }
 
-    (function () {
-        sec.animate({arc: [26, 60, 150, Math.random() * 255, Math.random() * 255, Math.random() * 255 ]}, 2000, ">");
-    })();
+    var prettyCircle = makePrettyCircle(300, 300, 42, 80);
+    prettyCircle.draw(0, 50);
 });
