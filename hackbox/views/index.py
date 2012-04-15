@@ -1,4 +1,4 @@
-from flask import redirect, render_template, session, request
+from flask import redirect, render_template, session, request, jsonify
 import dropbox
 from hackbox import app
 
@@ -8,18 +8,22 @@ def login():
                                                             app.config['APP_SECRET'], 
                                                             app.config['ACCESS_TYPE'])
     session['request_token'] = request_token = sess.obtain_request_token()
-    url = sess.build_authorize_url(request_token, oauth_callback="http://localhost:5000/")
+    url = sess.build_authorize_url(request_token, oauth_callback="http://localhost:5000/auth")
     return redirect(url)
 
+@app.route('/auth')
+def auth():
+    session['sess'].obtain_access_token(session['request_token'])
+    session['client'] = dropbox.client.DropboxClient(session['sess'])
+    return redirect('/')
+        
 @app.route('/')
 def index():
-    try:
-        session['sess'].obtain_access_token(session['request_token'])
-        client = session['client'] = dropbox.client.DropboxClient(session['sess'])
-        return render_template('index.html', access_token="None")
-    except (KeyError, ResponseError):
+    if 'client' not in session:
         return redirect('/login/')
+    else:
+        return render_template('index.html')
         
 @app.route('/get_folder_data')
 def get_folder_data():
-    return {}
+    return jsonify({})
