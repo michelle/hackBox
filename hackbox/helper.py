@@ -213,7 +213,7 @@ def get_files(client=None, uid=None, user=None):
         return list(db.files.find())
     user = user or get_user(client, uid)
     files = user.get('files', [])
-    return filter(lambda x: x, [db.files.find_one(file_) for file_ in files])
+    return filter(bool, [db.files.find_one(file_) for file_ in files])
 
 def is_public_file(file_):
     if type(file_) != type({}):
@@ -294,5 +294,3 @@ def dropdb():
     db.images.drop()
     db.audios.drop()
     db.docs.drop()
-
-

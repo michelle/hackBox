@@ -1,22 +1,22 @@
 $(document).ready(function() {
 
 
-var opts = {
-  lines: 15, // The number of lines to draw
-  length: 0, // The length of each line
-  width: 8, // The line thickness
-  radius: 40, // The radius of the inner circle
-  rotate: 0, // The rotation offset
-  color: '#000', // #rgb or #rrggbb
-  speed: 1, // Rounds per second
-  trail: 60, // Afterglow percentage
-  shadow: false, // Whether to render a shadow
-  hwaccel: false, // Whether to use hardware acceleration
-  className: 'spinner', // The CSS class to assign to the spinner
-  zIndex: 2e9, // The z-index (defaults to 2000000000)
-  top: 'auto', // Top position relative to parent in px
-  left: 'auto' // Left position relative to parent in px
-};
+    var opts = {
+        lines: 15, // The number of lines to draw
+        length: 0, // The length of each line
+        width: 8, // The line thickness
+        radius: 40, // The radius of the inner circle
+        rotate: 0, // The rotation offset
+        color: '#000', // #rgb or #rrggbb
+        speed: 1, // Rounds per second
+        trail: 60, // Afterglow percentage
+        shadow: false, // Whether to render a shadow
+        hwaccel: false, // Whether to use hardware acceleration
+        className: 'spinner', // The CSS class to assign to the spinner
+        zIndex: 2e9, // The z-index (defaults to 2000000000)
+        top: 'auto', // Top position relative to parent in px
+        left: 'auto' // Left position relative to parent in px
+    };
     var target = document.getElementById('sidebar');
     var spinner = new Spinner(opts).spin(target);
 
@@ -29,40 +29,40 @@ var opts = {
     var mix = {red: 255, green: 244, blue: 74};
 
     var pushFolderHistory = function(data) {
-        console.log("push");
+        console.log("push1", folderHistory, folderHistory.length);
         if (folderHistory.length == 4) {
-            folderHistory[0] = folderHistory[1];
-            folderHistory[1] = folderHistory[2];
-            folderHistory[2] = folderHistory[3];
-            folderHistory[3] = data;
-        } else {
-            folderHistory.push(data);
+            folderHistory.shift();
         }
-        console.log("push: ", folderHistory);
+        console.log("push2", folderHistory, folderHistory.length);
+        folderHistory.push(data);
+        console.log("push3", folderHistory, folderHistory.length);
     }
 
     var popFolderHistory = function(index) {
-        console.log("Pop:", folderHistory);
+        console.log("Pop1", folderHistory, folderHistory.length, index);
         console.log(index);
-        if (!folderHistory[index]) {
+        for (var i = folderHistory.length; i > index + 1; i--) {
+            folderHistory.pop();
+            console.log("Pop1b", folderHistory, folderHistory.length, index);
+        }
+        console.log("Pop2", folderHistory, folderHistory.length, index);
+
+        if (folderHistory.length == 0) {
             redrawAll(root);
         } else {
             redrawAll(folderHistory[index]);
         }
-        for (var i = folderHistory.length; i > index; i--) {
-            console.log('pooping', folderHistory.pop());
-        }
+        console.log("Pop3", folderHistory, folderHistory.length, index);
     }
 
     var drawFolderHistory = function(x0, y0) {
         var startAngle = -70;
 
-        console.log("prepare to draw:", folderHistory);
-        for (var i in folderHistory) {
-            var x = x0 + 250 * Math.cos(startAngle);
-            var y = y0 + 250 * Math.sin(startAngle);
-
-            console.log("drawing", folderHistory[i], x, y);
+        console.log("draw1", folderHistory, folderHistory.length);
+        for (var i = 0; i < folderHistory.length; i++) {
+            console.log("draw2", folderHistory, folderHistory.length);
+            var x = x0 + 270 * Math.cos(startAngle);
+            var y = y0 + 270 * Math.sin(startAngle);
             paper.setStart();
             drawPrettyCircle(x, y, folderHistory[i], true);
             paper.circle(x, y, 40).attr({fill: "r(0.75, 0.25)#fff-#ccc", stroke: "rgb(188, 188, 188)"});
@@ -79,7 +79,7 @@ var opts = {
                     });
             })(i, st);
 
-            startAngle += 40 / 180 * Math.PI;
+            startAngle += 35 / 180 * Math.PI;
         }
     }
     
