@@ -56,7 +56,7 @@ $(document).ready(function() {
 //        console.log("Pop3", folderHistory, folderHistory.length, index);
     }
 
-    var drawFolderHistory = function(x0, y0) {
+    var drawFolderHistory = function(x0, y0, prevFolder) {
         var startAngle = -70;
 
 //        console.log("draw1", folderHistory, folderHistory.length);
@@ -69,11 +69,14 @@ $(document).ready(function() {
             paper.circle(x, y, 40).attr({fill: "r(0.75, 0.25)#fff-#ccc", stroke: "rgb(188, 188, 188)"});
             var st = paper.setFinish();
             st.attr({transform: "s0.4 0.4 " + x + " " + y, "stroke-width": 20});
+            
             (function(id, _st) {
                 _st.mouseover(function () {
-                    _st.stop().animate({"stroke-opacity": 0.5}, 500, "elastic").attr("cursor", "pointer"); })
+                    _st.stop().animate({"stroke-opacity": 0.5}, 500, "elastic").attr("cursor", "pointer");
+                    updateDetails(folderHistory[id]); })
                     .mouseout(function () {
-                        _st.stop().animate({"stroke-opacity": 1}, 500, "elastic"); })
+                        _st.stop().animate({"stroke-opacity": 1}, 500, "elastic");
+                        updateDetails(prevFolder); })
                     .click(function() {
 //                        console.log("event fired", folderHistory);
                         popFolderHistory(id);
@@ -192,13 +195,13 @@ $(document).ready(function() {
     var redrawAll = function(data) {
 //        console.log(data);
         paper.clear();
-        var x = 3 * $(window).width() / 5;
+        var x = 4 * $(window).width() / 7;
         var y = $(window).height() / 2;
 
         drawPrettyCircle(x, y, data, false);
         drawPrettyButton(x, y, data);
         drawFolderName(x, y, data);
-        drawFolderHistory(x, y);
+        drawFolderHistory(x, y, data);
         updateDetails(data);
     }
 
@@ -216,18 +219,30 @@ $(document).ready(function() {
     }
 
     var updateDetails = function(item) {
-        $("#size").html(item.size);
+        console.log(item);
+        if (item.size != undefined) {
+            $("#size").html(item.size);
+        } else {
+            $("#size").html("--");
+        }
+        
         if (item.modified != undefined) {
             var date = item.modified.split(' ');
             $("#modified").html(date[1] + " " + date[2] + " " + date[3]);
+        } else {
+            $("#modified").html("--/--/----");
         }
+
         var filename;
+
         if (item.path == "/") {
             filename = "Dropbox";
         } else {
             filename = item.path.split('/').pop()
         }
         $("#filename").html(filename);
+
+        $("#path").html(item.path);
     }
 
     var display = function(item, parent) {
