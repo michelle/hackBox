@@ -30,7 +30,7 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#feffff', end
 #sidebar2 {
   position: fixed;
   height: 100%;
-  width: 230px;
+  width: 250px;
   padding: 20px;
   top: 0px;
   overflow: hidden;
@@ -122,8 +122,8 @@ h1 {
 #userinfo {
   position: relative;
   color: #afafaf;
-  font-size: 12px;
-  margin-top: 40px;
+  font-size: 13px;
+  margin-top: 30px;
   font-weight: 500;
   text-shadow: 0px 1px 0px #fff;
   width: 100%;
@@ -132,7 +132,7 @@ h1 {
 
 #userinfo strong {
   color: #757575;
-  line-height: 40px;
+  line-height: 30px;
 }
 
 #name {

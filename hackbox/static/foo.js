@@ -27,39 +27,28 @@ var folderHistory = new Array();
 var mix = {red: 255, green: 244, blue: 74};
 
 var pushFolderHistory = function(data) {
-    //        console.log("push1", JSON.stringify(folderHistory), folderHistory.length);
     if (folderHistory.length == 4) {
         folderHistory.shift();
     }
-    //        console.log("push2", JSON.stringify(folderHistory), folderHistory.length);
     folderHistory.push(data);
-    //        console.log("push3", JSON.stringify(folderHistory), folderHistory.length);
 }
 
 var popFolderHistory = function(index) {
-    //        console.log("Pop1", JSON.stringify(folderHistory)[2], folderHistory.length, index);
     for (var i = folderHistory.length - 1; i > index; i--) {
         folderHistory.pop();
-        //            console.log("Pop1b", folderHistory, folderHistory.length, index);
     }
-    //        console.log("Pop2", folderHistory, folderHistory.length, index);
 
     if (folderHistory.length == 0) {
-        //            console.log("Pop2a", folderHistory, folderHistory.length, index);
         redrawAll(root);
     } else {
-        //            console.log("Pop2b", folderHistory, folderHistory.length, index);
         redrawAll(folderHistory.pop());
     }
-    //        console.log("Pop3", folderHistory, folderHistory.length, index);
 }
 
 var drawFolderHistory = function(x0, y0, prevFolder) {
     var startAngle = -70;
 
-    //        console.log("draw1", folderHistory, folderHistory.length);
     for (var i = 0; i < folderHistory.length; i++) {
-        //            console.log("draw2", folderHistory, folderHistory.length);
         var x = x0 + 270 * Math.cos(startAngle);
         var y = y0 + 270 * Math.sin(startAngle);
         paper.setStart();
@@ -76,7 +65,6 @@ var drawFolderHistory = function(x0, y0, prevFolder) {
                     _st.stop().animate({"stroke-opacity": 1}, 500, "elastic");
                     updateDetails(prevFolder); })
                 .click(function() {
-                    //                        console.log("event fired", folderHistory);
                     popFolderHistory(id);
                 });
         })(i, st);
@@ -101,7 +89,6 @@ var makeFolderArc = function(x, y, width, radius, data, parentData, isHistoryPre
     };
 
     return {draw: function(start, end) {
-        //var parent = 
         var circle = paper.path()
             .data("assoc", data.path)
             .attr(param)
@@ -191,7 +178,6 @@ var drawPrettyButton = function(x, y, data) {
 }
 
 var redrawAll = function(data) {
-    //        console.log(data);
     currentFolder = data;
     paper.clear();
     var x = 4 * $(window).width() / 7;
@@ -205,7 +191,6 @@ var redrawAll = function(data) {
 }
 
 var getFolderName = function(path) {
-    //        console.log("path: ", path);
     if (path == "/") {
         return "Dropbox";
     } else {
@@ -218,7 +203,6 @@ var bytesToMB = function(bytes) {
 }
 
 var updateDetails = function(item) {
-    console.log(item);
     if (item.size != undefined) {
         $("#size").html(item.size);
     } else {
@@ -291,7 +275,6 @@ $(document).ready(function() {
 
         if (position > 0.97) {
             currentPosition += 20;
-            //currentPosition = currentPosition > bottom + 50 ? bottom + 50 : currentPosition;
             $(this).stop().animate({ scrollTop: currentPosition }, 500, "linear");
 
         }
@@ -320,7 +303,7 @@ $(document).ready(function() {
     });
 
     $.get('/get_account_info', function(user) {
-        $("#userinfo").html("Welcome, <strong>" + user.display_name + "</strong>.<br><br>You have <strong>" 
+        $("#userinfo").html("Welcome, <strong>" + user.display_name + "</strong>.<br>You have <strong>" 
 			    + Math.round(bytesToMB(user.quota_info.quota)) + " MB</strong> of data total.<br>You are using <strong>"
 			    + Math.round((user.quota_info.normal + user.quota_info.shared)/user.quota_info.quota * 100) + "%</strong> of your space and have <strong>"
 			    + Math.round(bytesToMB(user.quota_info.quota - (user.quota_info.normal + user.quota_info.shared))) + " MB</strong> remaining.");
