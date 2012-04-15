@@ -21,9 +21,20 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#feffff', end
   width: 220px;
   overflow: hidden;
   top: 0px;
+  left: 0px;
   background-color: #fff;
   border-right: 10px solid #c2c2c2;
   z-index: 100;
+}
+
+#sidebar2 {
+  position: fixed;
+  height: 100%;
+  width: 230px;
+  padding: 20px;
+  top: 0px;
+  overflow: hidden;
+  left: 230px;
 }
 
 #sidebar h3:focus, .folder h3:focus {
@@ -70,14 +81,11 @@ h1 {
 
 #details {
   opacity: 0.85;
-  position: fixed;
+  position: relative;
   border: 3px solid #fff;
   background-color: #362f2d;
   border-radius: 5px;
-  width: 150px;
-  height: 70px;
-  left: 250px;
-  top: 20px;
+  width: 200px;
   color: #fff;
   padding: 10px;
   font-size: 12px;
@@ -112,14 +120,13 @@ h1 {
 }
 
 #userinfo {
-  position: fixed;
-  top: 130px;
-  left: 250px;
+  position: relative;
   color: #afafaf;
   font-size: 12px;
+  margin-top: 20px;
   font-weight: 500;
   text-shadow: 0px 1px 0px #fff;
-  width: 220px;
+  width: 100%;
   text-transform: uppercase;
 }
 
@@ -136,5 +143,16 @@ h1 {
 #holder {
   /*margin-left: 400px;*/
   z-index: 0;
+}
+
+h2 {
+  font-size: 20px;
+  color: #c7c1bf;
+  margin: 0px;
+  padding: 0px;
+  margin-bottom: 5px;
+  line-height: 22px;
+  text-shadow: 0px 2px 0px #1a1615;
+  overflow:hidden;
 }
 

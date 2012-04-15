@@ -1,6 +1,7 @@
 $(document).ready(function() {
 
 
+
 var opts = {
   lines: 15, // The number of lines to draw
   length: 0, // The length of each line
@@ -70,7 +71,7 @@ var opts = {
             st.attr({transform: "s0.4 0.4 " + x + " " + y, "stroke-width": 20});
             (function(id, _st) {
                 _st.mouseover(function () {
-                    _st.stop().animate({"stroke-opacity": 0.5}, 500, "elastic"); })
+                    _st.stop().animate({"stroke-opacity": 0.5}, 500, "elastic").attr("cursor", "pointer"); })
                     .mouseout(function () {
                         _st.stop().animate({"stroke-opacity": 1}, 500, "elastic"); })
                     .click(function() {
@@ -99,6 +100,7 @@ var opts = {
         };
 
         return {draw: function(start, end) {
+            //var parent = 
             var circle = paper.path()
                 .data("assoc", data.path)
                 .attr(param)
@@ -107,12 +109,13 @@ var opts = {
                 .data("folder", data);
             if (!isHistoryPrettyCircle) {
                 circle.mouseover(function () {
-                    this.stop().animate({"stroke-opacity": 0.5, "stroke-width": 45}, 500, "elastic");
+                    this.stop().animate({"stroke-opacity": 0.5, "stroke-width": 45}, 500, "elastic").attr("cursor", "pointer");
                     $("h3[assoc='" + this.data("assoc") + "']").addClass("selected");
                     updateDetails(this.data("folder"));
                 }).mouseout(function () {
                     this.stop().animate({"stroke-opacity": 1, "stroke-width": 40}, 500, "elastic"); 
                     $("h3[assoc='" + this.data("assoc") + "']").removeClass("selected");
+                    updateDetails(parentData);
                 }).click(function() {
                     pushFolderHistory(parentData);
                     redrawAll(data);
@@ -162,10 +165,13 @@ var opts = {
 
     var drawFolderName = function(x, y, data) {
         var concatName = getFolderName(data.path);
-        if (concatName.length > 12)
-            concatName = concatName.substr(0, 12) + "...";
+        if (concatName.length > 10)
+            concatName = concatName.substr(0, 10) + "...";
+        var folderShadow = paper.text(x, y + 1, concatName);
+        folderShadow.attr({"font": "Open Sans", "font-size": "12px", "font-weight": "700", "fill": "rgb(255, 255, 255)", "text-shadow": "0px 1px 0px #fff"});
         var folderName = paper.text(x, y, concatName);
-        folderName.attr({"font": "Open Sans", "font-size": "12px", "font-weight": "200"});
+        folderName.attr({"font": "Open Sans", "font-size": "12px", "font-weight": "700", "fill": "rgb(155, 155, 155)", "text-shadow": "0px 1px 0px #fff"});
+        folderShadow.show();
         folderName.show();
     }
 
@@ -175,7 +181,7 @@ var opts = {
             // FILL IN
         });
         button.mouseover(function () {
-            button.stop().animate({transform: "s1.05 1.05 " + x + " " + y}, 500, "elastic");
+            button.stop().animate({transform: "s1.05 1.05 " + x + " " + y}, 500, "elastic").attr("cursor", "pointer");
         }).mouseout(function () {
             button.stop().animate({transform: ""}, 500, "elastic");
         });
@@ -264,7 +270,7 @@ var opts = {
 
         if (position > 0.97) {
             currentPosition += 20;
-            currentPosition = currentPosition > bottom ? bottom : currentPosition;
+            //currentPosition = currentPosition > bottom + 50 ? bottom + 50 : currentPosition;
             $(this).stop().animate({ scrollTop: currentPosition }, 500, "linear");
 
         }
