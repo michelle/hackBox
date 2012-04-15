@@ -207,10 +207,10 @@ var bytesToMB = function(bytes) {
         var button = paper.circle(x, y, 60).attr({fill: "r(0.75, 0.25)#fff-#ccc", stroke: "rgb(188, 188, 188)"});
         button.click(function() {
             if (data.path == "/") {
-                $("#menu").slideToggle(500);
-                $("#sharelink").html("Not available for /");
+                $("#menu").slideToggle(300);
+                $("#sharelink").html("Cannot share root folder: /");
             } else {
-                $("#menu").slideToggle(500);
+                $("#menu").slideToggle(300);
                 shareStuff(data.path, function(result) { $("#sharelink").html(result.link.url); });
             }
         });
