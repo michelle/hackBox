@@ -158,7 +158,7 @@ def update_files(client, uid=None, user=None):
         for path, file_ in entries:
             if dict_files.get(path):
                 id_wrap = { 'file_id': dict_files[path]['_id'] }
-                db.files.remove(dict_files[path])
+                db.files.remove(dict_files[path]['_id'])
                 db.public_files.remove(id_wrap)
                 db.images.remove(id_wrap)
                 db.audios.remove(id_wrap)
@@ -168,7 +168,7 @@ def update_files(client, uid=None, user=None):
             else:
                 for file_ in files:
                     if file_['lc_path'].startswith(path):
-                        db.files.remove(file_)
+                        db.files.remove(file_['_id'])
                 files = filter(lambda file_: not file_['lc_path'].startswith(path), files)
         cursor = delta["cursor"]
         if not delta["has_more"]:
@@ -188,6 +188,8 @@ def update_files(client, uid=None, user=None):
         file_['path'] = file_['lc_path'] = '/'
         file_['is_dir'] = True
         files.append(db.files.insert(file_, safe=True))
+
+    files = filter(lambda file_: db.files.find_one(file_), files)
 
     public_files = filter(is_public_file, files)
     audios = filter(TYPE_VERIFIER['audio'], public_files)
