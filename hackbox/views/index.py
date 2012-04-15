@@ -26,21 +26,37 @@ def index():
     user = helper.get_or_add_user(session['client'])
     return render_template('index.html', user=user)
 
-@app.route('/share')
+@app.route('/share/<type_>')
+@app.route('/share/')
 @helper.dropbox_auth_required
-def share():
+def share(type_=None):
+    search = request.args.get('search')
     client = session['client']
+
     user = helper.get_or_add_user(client)
     helper.update_files(client, user=user)
     files = helper.get_public_files(client)
+
+    if type_ or search:
+        def filter_fn( file_ ):
+            return ( not type_ or type_ == file_['type'] ) and ( not search or search.lower() in file_['path'].lower() )
+        files = filter(filter_fn, files)
     return render_template('share.html', files=files)
-        
+
 @app.route('/get_folder_data')
 @helper.dropbox_auth_required
 def get_folder_data():
     client = session['client']
+    helper.update_files(client)
     if 'folder_data' not in session:
-        folder_data = get_nested_folder(client)
+        folder_data = helper.get_nested_folder(client)
     else:
         folder_data = session['folder_data']
     return jsonify(folder_data)
+
+@app.route('/get_account_info')
+@helper.dropbox_auth_required
+def get_account_info():
+    client = session['client']
+    return jsonify(client.account_info())
+
