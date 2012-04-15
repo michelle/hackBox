@@ -1,3 +1,4 @@
+import json
 from flask import redirect, render_template, session, request, jsonify, url_for
 import dropbox
 from hackbox import app
@@ -17,7 +18,7 @@ def login():
 def auth(): # TODO change this to "obtain_access" later
     session['sess'].obtain_access_token(session['request_token'])
     session['client'] = dropbox.client.DropboxClient(session['sess'])
-    post_auth(session['client'])
+    helper.post_auth(session['client'])
     return redirect('/')
         
 @app.route('/')
@@ -35,7 +36,7 @@ def share(type_=None):
 
     user = helper.get_or_add_user(client)
     helper.update_files(client, user=user)
-    files = helper.get_public_files(client)
+    files = helper.get_public_files()
 
     if type_ or search:
         def filter_fn( file_ ):
@@ -60,4 +61,3 @@ def get_folder_data():
 def get_account_info():
     client = session['client']
     return jsonify(client.account_info())
-

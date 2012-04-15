@@ -1,10 +1,32 @@
 $(document).ready(function() {
 
+
+var opts = {
+  lines: 15, // The number of lines to draw
+  length: 0, // The length of each line
+  width: 8, // The line thickness
+  radius: 40, // The radius of the inner circle
+  rotate: 0, // The rotation offset
+  color: '#000', // #rgb or #rrggbb
+  speed: 1, // Rounds per second
+  trail: 60, // Afterglow percentage
+  shadow: false, // Whether to render a shadow
+  hwaccel: false, // Whether to use hardware acceleration
+  className: 'spinner', // The CSS class to assign to the spinner
+  zIndex: 2e9, // The z-index (defaults to 2000000000)
+  top: 'auto', // Top position relative to parent in px
+  left: 'auto' // Left position relative to parent in px
+};
+    var target = document.getElementById('sidebar');
+    var spinner = new Spinner(opts).spin(target);
+
     var paper = Raphael("holder", $(window).width(), $(window).height());
     
     var root;
 
     var folderHistory = [];
+
+    var mix = {red: 255, green: 244, blue: 74};
 
     var pushFolderHistory = function(data) {
         console.log("push");
@@ -70,24 +92,28 @@ $(document).ready(function() {
             var endAngle = end * 2 * Math.PI;
             var path = [["M", x + radius * Math.cos(startAngle), y + radius * Math.sin(startAngle)],
                         ["A", radius, radius, 0, +((end - start) > 0.5), 1, x + radius * Math.cos(endAngle), y + radius * Math.sin(endAngle)]];
-            return {path: path, stroke: "rgb(".concat(R, ',', G, ',', B, ')')};
+            return {path: path, stroke: "rgb(".concat((R + mix.red) / 2, ',', (G + mix.green) / 2, ',', (B + mix.blue) / 2, ')')};
         };
 
         return {draw: function(start, end) {
             var circle = paper.path()
+                .data("assoc", data.path)
                 .attr(param)
                 .attr("title", data.path.split('/').pop())
                 .attr({arc: [start, end, radius, Math.random() * 255, Math.random() * 255, Math.random() * 255]})
                 .data("folder", data);
             if (!isHistoryPrettyCircle) {
                 circle.mouseover(function () {
-                    this.stop().animate({"stroke-opacity": 0.5, "stroke-width": 45}, 500, "elastic"); })
-                    .mouseout(function () {
-                        this.stop().animate({"stroke-opacity": 1, "stroke-width": 40}, 500, "elastic"); })
-                    .click(function() {
-                        pushFolderHistory(parentData);
-                        redrawAll(data);
-                    });
+                    this.stop().animate({"stroke-opacity": 0.5, "stroke-width": 45}, 500, "elastic");
+                    $("h3[assoc='" + this.data("assoc") + "']").addClass("selected");
+                    updateDetails(this.data("folder"));
+                }).mouseout(function () {
+                    this.stop().animate({"stroke-opacity": 1, "stroke-width": 40}, 500, "elastic"); 
+                    $("h3[assoc='" + this.data("assoc") + "']").removeClass("selected");
+                }).click(function() {
+                    pushFolderHistory(parentData);
+                    redrawAll(data);
+                });
             }
             circle.show();
         }, animate: function(start, end, duration) {
@@ -132,7 +158,10 @@ $(document).ready(function() {
     }
 
     var drawFolderName = function(x, y, data) {
-        var folderName = paper.text(x, y, getFolderName(data.path));
+        var concatName = getFolderName(data.path);
+        if (concatName.length > 12)
+            concatName = concatName.substr(0, 12) + "...";
+        var folderName = paper.text(x, y, concatName);
         folderName.attr({"font": "Open Sans", "font-size": "12px", "font-weight": "200"});
         folderName.show();
     }
@@ -164,7 +193,7 @@ $(document).ready(function() {
     var getFolderName = function(path) {
         console.log("path: ", path);
         if (path == "/") {
-            return "/";
+            return "Dropbox";
         } else {
             return path.split('/').pop();
         }
@@ -180,12 +209,20 @@ $(document).ready(function() {
             var date = item.modified.split(' ');
             $("#modified").html(date[1] + " " + date[2] + " " + date[3]);
         }
+        var filename;
+        if (item.path == "/") {
+            filename = "Dropbox";
+        } else {
+            filename = item.path.split('/').pop()
+        }
+        $("#filename").html(filename);
     }
 
     var display = function(item, parent) {
         var name = item.path.split('/').pop();
         var elem = $("<h3>" + name + "</h3>");
-        if (item.path == "/") { elem = $("<h3>/</h3>"); }
+        if (item.path == "/") { elem = $("<h3>Dropbox</h3>"); }
+        elem.attr("assoc", item.path);
 
         parent.append(elem);
         var innerdiv = $("<div></div>").addClass("folder");
@@ -234,7 +271,7 @@ $(document).ready(function() {
         root = data;
 
         display(data, $("#tree"));
-
+        spinner.stop()
         $( ".folder" ).accordion(
             { autoHeight: false,
               collapsible: true,
@@ -246,11 +283,12 @@ $(document).ready(function() {
     });
 
     $.get('/get_account_info', function(user) {
-        $("#userinfo").html("Welcome, <strong>" + user.display_name + "</strong>. <br>You have <strong>" 
-                            + Math.round(bytesToMB(user.quota_info.quota)) + " MB</strong> of data total. <br>You are using <strong>"
-                            + Math.round((user.quota_info.normal + user.quota_info.shared)/user.quota_info.quota * 100) + "%</strong> of your space and have <strong>"
-                            + Math.round(bytesToMB(user.quota_info.quota - (user.quota_info.normal + user.quota_info.shared))) + " MB</strong> left.");
+        $("#userinfo").html("Welcome, <strong>" + user.display_name + "</strong>.<br><br>You have <strong>" 
+			    + Math.round(bytesToMB(user.quota_info.quota)) + " MB</strong> of data total.<br>You are using <strong>"
+			    + Math.round((user.quota_info.normal + user.quota_info.shared)/user.quota_info.quota * 100) + "%</strong> of your space and have <strong>"
+			    + Math.round(bytesToMB(user.quota_info.quota - (user.quota_info.normal + user.quota_info.shared))) + " MB</strong> remaining.");
     });
+
 
     $("#sidebar").mouseleave(function(e) {
         $(this).stop();
