@@ -203,64 +203,64 @@ var bytesToMB = function(bytes) {
 }
 
 
-    var drawPrettyButton = function(x, y, data) {
-        var button = paper.circle(x, y, 60).attr({fill: "r(0.75, 0.25)#fff-#ccc", stroke: "rgb(188, 188, 188)"});
-        button.click(function() {
-            if (data.path == "/") {
-                $("#menu").slideToggle(300);
-                $("#sharelink").html("Cannot share root folder: /");
-            } else {
-                $("#menu").slideToggle(300);
-                shareStuff(data.path, function(result) { $("#sharelink").html(result.link.url); });
-            }
-        });
-        button.mouseover(function () {
-            button.stop().animate({transform: "s1.05 1.05 " + x + " " + y}, 500, "elastic").attr("cursor", "pointer");
-        }).mouseout(function () {
-            button.stop().animate({transform: ""}, 500, "elastic");
-        });
+var drawPrettyButton = function(x, y, data) {
+    var button = paper.circle(x, y, 60).attr({fill: "r(0.75, 0.25)#fff-#ccc", stroke: "rgb(188, 188, 188)"});
+    button.click(function() {
+        if (data.path == "/") {
+            $("#menu").slideToggle(300);
+            $("#sharelink").html("Cannot share root folder: /");
+        } else {
+            $("#menu").slideToggle(300);
+            shareStuff(data.path, function(result) { $("#sharelink").html(result.link.url); });
+        }
+    });
+    button.mouseover(function () {
+        button.stop().animate({transform: "s1.05 1.05 " + x + " " + y}, 500, "elastic").attr("cursor", "pointer");
+    }).mouseout(function () {
+        button.stop().animate({transform: ""}, 500, "elastic");
+    });
+}
+
+var redrawAll = function(data) {
+    //        console.log(data);
+    paper.clear();
+    var x = 4 * $(window).width() / 7;
+    var y = $(window).height() / 2;
+
+    $("#menu").slideUp(500);
+    drawPrettyCircle(x, y, data, false);
+    drawPrettyButton(x, y, data);
+    drawFolderName(x, y, data);
+    drawFolderHistory(x, y, data);
+    updateDetails(data);
+}
+
+
+var updateDetails = function(item) {
+    if (item.size != undefined) {
+        $("#size").html(item.size);
+    } else {
+        $("#size").html("--");
+    }
+    
+    if (item.modified != undefined) {
+        var date = item.modified.split(' ');
+        $("#modified").html(date[1] + " " + date[2] + " " + date[3]);
+    } else {
+        $("#modified").html("--/--/----");
     }
 
-    var redrawAll = function(data) {
-//        console.log(data);
-        paper.clear();
-        var x = 4 * $(window).width() / 7;
-        var y = $(window).height() / 2;
+    var filename;
 
-        $("#menu").slideUp(500);
-        drawPrettyCircle(x, y, data, false);
-        drawPrettyButton(x, y, data);
-        drawFolderName(x, y, data);
-        drawFolderHistory(x, y, data);
-        updateDetails(data);
+    if (item.path == "/") {
+        filename = "Dropbox";
+    } else {
+        filename = item.path.split('/').pop()
     }
+    $("#filename").html(filename);
 
-
-    var updateDetails = function(item) {
-        if (item.size != undefined) {
-            $("#size").html(item.size);
-        } else {
-            $("#size").html("--");
-        }
-        
-        if (item.modified != undefined) {
-            var date = item.modified.split(' ');
-            $("#modified").html(date[1] + " " + date[2] + " " + date[3]);
-        } else {
-            $("#modified").html("--/--/----");
-        }
-
-        var filename;
-
-        if (item.path == "/") {
-            filename = "Dropbox";
-        } else {
-            filename = item.path.split('/').pop()
-        }
-        $("#filename").html(filename);
-
-            $("#path").html(item.path);
-        }
+    $("#path").html(item.path);
+}
 
 var display = function(item, parent) {
     var name = item.path.split('/').pop();
@@ -350,7 +350,7 @@ $(document).ready(function() {
 
     shareStuff = function(path, fn) {
         $.get('/share_folder', {'path': path }, function(data){ 
-          fn(data);
+            fn(data);
         })
     }
 
