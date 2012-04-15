@@ -61,8 +61,7 @@ $(document).ready(function() {
     });
 
 
-    var paper = Raphael("holder", 600, 600);
-
+    var paper = Raphael("holder", $(window).width(), $(window).height());
 
     var makePrettyCircle = function(x, y, width, radius) {
         var param = {"stroke-width": width};
@@ -84,10 +83,9 @@ $(document).ready(function() {
         }};
     }
 
-    var prettyCircle1 = makePrettyCircle(300, 300, 42, 80);
+    var prettyCircle1 = makePrettyCircle(600, 400, 42, 80);
     prettyCircle1.draw(15, 30);
     prettyCircle1.draw(30, 60);
     prettyCircle1.draw(60, 90);
     prettyCircle1.draw(90, 15);
-
 });
