@@ -1,35 +1,5 @@
 $(document).ready(function() {
 
-    currentPosition = 0;
-    $("#sidebar").mousemove(function(e) {
-        var h = $(this).height();
-        var bottom = $("#height").height();
-
-        var offset = $(this).offset();
-        var position = (e.pageY - offset.top) / h;
-
-        if (position < 0.03) {
-            currentPosition -= 20;
-            currentPosition = currentPosition < 0 ? 0 : currentPosition;
-
-            $(this).stop().animate({ scrollTop: currentPosition }, 500, "linear");
-
-        }
-
-        if (position > 0.97) {
-            currentPosition += 20;
-            currentPosition = currentPosition > bottom ? bottom : currentPosition;
-            $(this).stop().animate({ scrollTop: currentPosition }, 500, "linear");
-
-        }
-    });
-
-
-    $("#sidebar").mouseleave(function(e) {
-        $(this).stop();
-    });
-
-
     var paper = Raphael("holder", $(window).width(), $(window).height());
 
     var makeFolderArc = function(x, y, width, radius, data) {
@@ -84,7 +54,7 @@ $(document).ready(function() {
             if (data.children[i].is_dir) {
                 var folderArc = makeFolderArc(x, y, 41, 80 + depth * 40, data.children[i]);
                 var end = start + data.children[i].bytes / data.bytes * (parentEnd - parentStart);
-                if (depth == 0 || end - start > 0.01) {
+                if (depth == 0 || end - start > 0.005) {
                     folderArc.draw(start, end);
                     drawPrettyLayer(x, y, data.children[i], start, end, depth + 1);
                     start = end;
@@ -108,21 +78,6 @@ $(document).ready(function() {
         updateDetails(data);
     }
 
-    $.get('/get_folder_data', function(data) {
-        console.log(data);
-
-        for (var i in data.children) {
-            display(data.children[i], $("#tree"));
-        }
-
-        $( "#tree, .folder" ).accordion(
-            { autoHeight: false,
-              collapsible: true,
-              active: false });
-
-        redrawAll(data);
-    });
-
     var getFolderName = function(path) {
         console.log("path: ", path);
         if (path == "/") {
@@ -132,11 +87,11 @@ $(document).ready(function() {
         }
     }
 
-    bytesToMB = function(bytes) {
+    var bytesToMB = function(bytes) {
         return bytes * (9.53674316 * Math.pow(10, -7));
     }
 
-    updateDetails = function(item) {
+    var updateDetails = function(item) {
         $("#size").html(Math.round(bytesToMB(item.bytes)));
         if (item.modified != undefined) {
             var date = item.modified.split(' ');
@@ -144,7 +99,7 @@ $(document).ready(function() {
         }
     }
 
-    display = function(item, parent) {
+    var display = function(item, parent) {
         var name = item.path.split('/').pop();
         var elem = $("<h3>" + name + "</h3>");
 
@@ -165,6 +120,45 @@ $(document).ready(function() {
             redrawAll(item);
         });
     }
+
+    currentPosition = 0;
+    $("#sidebar").mousemove(function(e) {
+        var h = $(this).height();
+        var bottom = $("#height").height();
+
+        var offset = $(this).offset();
+        var position = (e.pageY - offset.top) / h;
+
+        if (position < 0.03) {
+            currentPosition -= 20;
+            currentPosition = currentPosition < 0 ? 0 : currentPosition;
+
+            $(this).stop().animate({ scrollTop: currentPosition }, 500, "linear");
+
+        }
+
+        if (position > 0.97) {
+            currentPosition += 20;
+            currentPosition = currentPosition > bottom ? bottom : currentPosition;
+            $(this).stop().animate({ scrollTop: currentPosition }, 500, "linear");
+
+        }
+    });
+
+    $.get('/get_folder_data', function(data) {
+        console.log(data);
+
+        for (var i in data.children) {
+            display(data.children[i], $("#tree"));
+        }
+
+        $( "#tree, .folder" ).accordion(
+            { autoHeight: false,
+              collapsible: true,
+              active: false });
+
+        redrawAll(data);
+    });
 
     $("#sidebar").mouseleave(function(e) {
         $(this).stop();
