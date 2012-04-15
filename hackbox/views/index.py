@@ -44,10 +44,6 @@ def share(type_=None):
     else:
         files = helper.get_public_files()
 
-<<<<<<< HEAD
-    print files
-=======
->>>>>>> 91819499f55d1f10225cbc330c3b59b5eb0750b9
     if search:
         def filter_fn( file_ ):
             return ( not type_ or type_ == file_['type'] ) and ( not search or search.lower() in file_['path'].lower() )
