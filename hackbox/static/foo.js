@@ -1,6 +1,14 @@
 $(document).ready(function() {
 
     var paper = Raphael("holder", $(window).width(), $(window).height());
+
+    var folderStack = new Array();
+
+    var pushFolderStack = function(data) {
+    }
+
+    var popFolderStack = function(data) {
+    }
     
     var makeRandomColor = function() {
         return "rgb(".concat(Math.random() * 255, ',', Math.random() * 255, ',', Math.random() * 255, ')');
@@ -71,7 +79,6 @@ $(document).ready(function() {
         }        
     }
 
-
     var drawFolderName = function(x, y, data) {
         var folderName = paper.text(x, y, getFolderName(data.path));
         folderName.attr({"font": "Open Sans", "font-size": "12px", "font-weight": "200"});
@@ -79,18 +86,23 @@ $(document).ready(function() {
     }
 
     var drawPrettyButton = function(x, y, data) {
-        paper.circle(x, y, 60).attr({fill: "r(0.75, 0.25)#fff-#ccc", stroke: "rgb(188, 188, 188)"})
-            .click(function() {
-                // FILL IN            
-            });
+        var button = paper.circle(x, y, 60).attr({fill: "r(0.75, 0.25)#fff-#ccc", stroke: "rgb(188, 188, 188)"});
+        button.click(function() {
+            // FILL IN
+        });
+        button.mouseover(function () {
+            button.stop().animate({transform: "s1.05 1.05 " + x + " " + y}, 500, "elastic");
+        }).mouseout(function () {
+            button.stop().animate({transform: ""}, 500, "elastic");
+        });
     }
 
     var redrawAll = function(data) {
         paper.clear();
         var x = 3 * $(window).width() / 5;
         var y = $(window).height() / 2;
-        drawPrettyButton(x, y, data);
         drawPrettyCircle(x, y, data);
+        drawPrettyButton(x, y, data);
         drawFolderName(x, y, data);
         updateDetails(data);
     }
