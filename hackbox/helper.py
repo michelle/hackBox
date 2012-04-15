@@ -5,6 +5,7 @@ from hackbox import app
 from hurry.filesize import size, alternative
 from functools import wraps
 from flask import url_for, session, redirect
+from hackbox.db import db
 
 
 def dropbox_auth_required(f):
@@ -12,6 +13,7 @@ def dropbox_auth_required(f):
     def decorated_function(*args, **kwargs):
         if 'client' not in session or 'sess' not in session:
             return redirect(url_for('login'))
+        print session['client'].account_info()
         return f(*args, **kwargs) 
     return decorated_function
 
@@ -84,3 +86,21 @@ def get_public_files(client):
     return [ [path, metadata] for path, metadata in entries if
             not metadata['is_dir'] and (path.startswith('/public/') or path == '/public') ]
 
+def add_user(client):
+    account_info = client.account_info()
+    email = account_info['email'] 
+    display_name = account_info['display_name']
+    uid = account_info['uid']
+    if db.users.find({'uid': uid}).count() > 0:
+        db.users.update({'uid': uid}, {'$set': {'email': email, 'display_name': display_name}})
+    else:
+        db.users.insert({
+            'email': email,
+            'display_name': display_name,
+            'uid': uid,
+        })
+
+def get_user(client):
+    uid = client.account_info()['uid']
+    add_user(client)
+    return db.users.find_one({'uid': uid})
