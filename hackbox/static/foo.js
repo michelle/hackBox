@@ -72,6 +72,7 @@ $(document).ready(function() {
     var drawPrettyCircle = function(x, y, data) {
         paper.clear();
         updateDetails(data);
+
         var folderName = paper.text(3*$(window).width()/5, $(window).height()/2, currentFolderStr);
         folderName.attr({"font": "Open Sans", "font-size": "12px", "font-weight": "700"});
 
@@ -104,17 +105,24 @@ $(document).ready(function() {
         
     }
 
+    $.get('/get_account_info', function(user) {
+        $("#userinfo").html("Welcome, <strong>" + user.display_name + "</strong>. <br>You have <strong>" 
+            + Math.round(bytesToMB(user.quota_info.quota)) + " MB</strong> of data total. <br>You are using <strong>"
+            + Math.round((user.quota_info.normal + user.quota_info.shared)/user.quota_info.quota * 100) + "%</strong> of your space and have <strong>"
+            + Math.round(bytesToMB(user.quota_info.quota - (user.quota_info.normal + user.quota_info.shared))) + " MB</strong> left.");
+    });
+
     $.get('/get_folder_data', function(data) {
-        console.log(data);
+            display(data, $("#tree"));
 
-        for (var i in data.children) {
-            display(data.children[i], $("#tree"));
-        }
-
-        $( "#tree, .folder" ).accordion(
+        $( ".folder" ).accordion(
             { autoHeight: false,
               collapsible: true,
               active: false });
+
+        $("#tree").accordion(
+            { autoHeight: false,
+              collapsible: true });
 
         drawPrettyCircle(3*$(window).width()/5, $(window).height()/2, data);
 
@@ -153,6 +161,7 @@ $(document).ready(function() {
     display = function(item, parent) {
         var name = item.path.split('/').pop();
         var elem = $("<h3>" + name + "</h3>");
+        if (item.path == "/") { elem = $("<h3>/</h3>"); }
 
         parent.append(elem);
         var innerdiv = $("<div></div>").addClass("folder");
