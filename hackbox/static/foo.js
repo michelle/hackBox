@@ -31,7 +31,7 @@ $(document).ready(function() {
 
     var paper = Raphael("holder", $(window).width(), $(window).height());
 
-    var makePrettyCircle = function(x, y, width, radius) {
+    var makePrettyCircle = function(x, y, width, radius, data) {
         var param = {"stroke-width": width};
 
         paper.customAttributes.arc = function (start, end, total, radius, R, G, B) {
@@ -43,32 +43,52 @@ $(document).ready(function() {
         };
 
         return {draw: function(start, end) {
-            var circle = paper.path().attr(param).attr({arc: [start, end, 1, radius, Math.random() * 255, Math.random() * 255, Math.random() * 255]});;
+            var circle = paper.path()
+                .attr(param)
+                .attr({arc: [start, end, 1, radius, Math.random() * 255, Math.random() * 255, Math.random() * 255]})
+                .data("folder", data)
+                .click(function() {
+                    drawPrettyCircle(x, y, data);
+                });
             circle.show();
         }, animate: function(start, end, duration) {
-            var circle = paper.path().attr(param).attr({arc: [start, end, 1, radius, Math.random() * 255, Math.random() * 255, Math.random() * 255]});;
+            var circle = paper.path()
+                .attr(param)
+                .attr({arc: [start, end, 1, radius, Math.random() * 255, Math.random() * 255, Math.random() * 255]})
+                .data("folder", data)
+                .click(function() {
+                    drawPrettyCircle(x, y, data);
+                });
             circle.animate({arc: [start, end, 1, radius, Math.random() * 255, Math.random() * 255, Math.random() * 255 ]}, 5000, ">");
         }};
     }
 
-    var prettyCircle1 = makePrettyCircle(600, 400, 42, 80);
+    var currentFolder;
+
+    var drawPrettyCircle = function(x, y, data) {
+        var start = 0;
+        for (var i in data.children) {
+            var prettyCircle = makePrettyCircle(x, y, 42, 80, data.children[i]);
+            var end = start + data.children[i].bytes / data.bytes;
+            prettyCircle.draw(start, end);
+            start = end;
+        }
+    }
 
     $.get('/get_folder_data', function(data) {
-        console.log(data.bytes);
-        var start = 0;
+        console.log(data);
 
         for (var i in data.children) {
             display(data.children[i], $("#tree"));
-
-            var end = start + data.children[i].bytes / data.bytes;
-            prettyCircle1.draw(start, end);
-            start = end;
         }
-        $( "#tree, .folder" ).accordion({ autoHeight: false,
-                                        collapsible: true,
-                                        animated: false,
-                                        active: false });
 
+        drawPrettyCircle(3*$(window).width()/5, $(window).height()/2, data);
+
+        $( "#tree, .folder" ).accordion(
+            { autoHeight: false,
+              collapsible: true,
+              animated: false,
+              active: false });
         currentFolder = data;
         updateDetails(data);
     });
@@ -104,35 +124,8 @@ $(document).ready(function() {
         $(this).stop();
     });
 
-    var paper = Raphael("holder", $(window).width(), $(window).height());
-
-    var makePrettyCircle = function(x, y, width, radius) {
-        var param = {"stroke-width": width};
-
-        paper.customAttributes.arc = function (start, end, total, radius, R, G, B) {
-            var startAngle = start / total * 2 * Math.PI;
-            var endAngle = end / total * 2 * Math.PI;
-            var path = [["M", x + radius * Math.cos(startAngle), y + radius * Math.sin(startAngle)],
-                        ["A", radius, radius, 0, +((end - start) / total > 0.5), 1, x + radius * Math.cos(endAngle), y + radius * Math.sin(endAngle)]];
-            return {path: path, stroke: "rgb(".concat(R, ',', G, ',', B, ')')};
-        };
-
-        return {draw: function(start, end) {
-            var circle = paper.path().attr(param).attr({arc: [start, end, 100, radius, Math.random() * 255, Math.random() * 255, Math.random() * 255]});;
-            circle.show();
-        }, animate: function(start, end, duration) {
-            var circle = paper.path().attr(param).attr({arc: [start, end, 100, radius, Math.random() * 255, Math.random() * 255, Math.random() * 255]});;
-            circle.animate({arc: [start, end, 100, radius, Math.random() * 255, Math.random() * 255, Math.random() * 255 ]}, 5000, ">");
-        }};
-    }
-
-    var prettyCircle1 = makePrettyCircle(3*$(window).width()/5, $(window).height()/2, 30, 60);
-    prettyCircle1.draw(15, 30);
-    prettyCircle1.draw(30, 60);
-    prettyCircle1.draw(60, 90);
-    prettyCircle1.draw(90, 15);
-
     var folderName = paper.text(3*$(window).width()/5, $(window).height()/2, "Folder Name");
     folderName.attr({"font": "Open Sans", "font-size": "12px"});
+
     folderName.show();
 });
