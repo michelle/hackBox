@@ -1,5 +1,7 @@
 import os
 from collections import defaultdict
+import dropbox
+from hackbox import app
 
 def get_folder_list_and_file_name(path):
     folders = []
@@ -62,3 +64,12 @@ def get_children(entries):
 def sort_entry(entries):
     return sorted(entries, key=lambda x: get_depth(x[1]['path']))
 
+def getClient():
+    sess = dropbox.session.DropboxSession(app.config['APP_KEY'], 
+                                   app.config['APP_SECRET'], 
+                                   app.config['ACCESS_TYPE'])
+    request_token = sess.obtain_request_token()
+    url = sess.build_authorize_url(request_token)
+    raw_input("%s\nPlease authorize in the browser. After you're done, press enter." % url)
+    sess.obtain_access_token(request_token)
+    return dropbox.client.DropboxClient(sess)
