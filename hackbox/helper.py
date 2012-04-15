@@ -78,3 +78,8 @@ def getClient():
     raw_input("%s\nPlease authorize in the browser. After you're done, press enter." % url)
     sess.obtain_access_token(request_token)
     return dropbox.client.DropboxClient(sess)
+
+def get_public_files(client):
+    entries = client.delta()["entries"]
+    return [ [path, metadata] for path, metadata in entries if
+            not metadata['is_dir'] and (path.startswith('/public/') or path == '/public') ]
