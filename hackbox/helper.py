@@ -8,9 +8,26 @@ from functools import wraps
 from flask import url_for, session, redirect
 from hackbox.db import db
 
+
+
+def filetype_checker(filetype):
+    def checker(file_):
+        if type(file_) != type({}):
+            file_ = db.files.find_one(file_)
+        return file_['type'] == filetype
+    return checker
+
+is_image = filetype_checker('image')
+is_audio = filetype_checker('audio')
+
+get_images = lambda : get_actual_files(list(db.images.find()))
+get_audios = lambda : get_actual_files(list(db.audios.find()))
+
 ACCEPTABLE_TYPES = { 'audio',
                      'image', }
 
+TYPE_GETTER = { 'audio': get_audios, 'image': get_images }
+TYPE_VERIFIER = { 'audio': is_audio, 'image': is_image }
 def dropbox_auth_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -103,8 +120,12 @@ def get_dict_files(files):
         dict_files[file_['lc_path']] = file_
     return dict_files
 
+def get_user(client=None, uid=None):
+    assert client or uid
+    return db.users.find_one({'uid': uid or client.account_info()['uid']})
+
 def update_files(client, uid=None, user=None):
-    user = user or db.users.find_one({'uid': uid or client.account_info()['uid']})
+    user = user or get_user(client, uid)
     files = get_files(client, user=user)
     dict_files = get_dict_files(files)
     cursor = user.get('cursor', None)
@@ -114,6 +135,10 @@ def update_files(client, uid=None, user=None):
         for path, file_ in entries:
             if dict_files.get(path):
                 db.files.remove(dict_files[path])
+                id_wrap = {'file_id' : file_id}
+                db.public_files.remove(id_wrap)
+                db.images.remove(id_wrap)
+                db.audios.remove(id_wrap)
             if file_:
                 dict_files[path] = insert_file(user, file_, path)
             else:
@@ -136,22 +161,30 @@ def update_files(client, uid=None, user=None):
         file_['is_dir'] = True
         files.append(db.files.insert(file_))
 
-    db.users.update({'uid': user['uid']}, {'$set': {'files': files, 'cursor': cursor}}, safe=True)
-    
+    public_files = filter(is_public_file, files)
+    audios = filter(TYPE_VERIFIER['audio'], public_files)
+    images = filter(TYPE_VERIFIER['image'], public_files)
+
+    db.users.update({'uid': user['uid']}, {'$set': {'files': files, 'public_files': public_files, 'audios': audios, 'images': images, 'cursor': cursor}}, safe=True)
+
 def get_files(client=None, uid=None, user=None):
     if not client:
         return list(db.files.find())
-    user = user or db.users.find_one({'uid': uid or client.account_info()['uid']})
+    user = user or get_user(client, uid)
     files = user.get('files', [])
     return filter(lambda x: x, [db.files.find_one(file_) for file_ in files])
 
 def is_public_file(file_):
+    if type(file_) != type({}):
+        file_ = db.files.find_one(file_)
     return not file_['is_dir'] \
            and (file_['lc_path'].startswith('/public/') or file_['lc_path'] == '/public') \
            and file_['mime_type'].split('/')[0] in ACCEPTABLE_TYPES
 
 def get_public_files(client=None):
-    return filter(is_public_file, get_files(client))
+    if not client:
+        return get_actual_files(list(db.public_files.find()))
+    return get_user(client)['public_files']
 
 def insert_file(user, file_, path):
     file_['owner_id'] = user['uid']
@@ -162,7 +195,15 @@ def insert_file(user, file_, path):
         file_['type'] = 'folder'
     file_['path'] = file_['path']
     file_['lc_path'] = path or file_['path'].lower()
-    return db.files.insert( file_ )
+    file_id = db.files.insert( file_ )
+    if is_public_file(file_):
+        id_wrap = {'file_id' : file_id}
+        db.public_files.insert( id_wrap)
+        if file_['type'] == 'audio':
+            db.audios.insert( id_wrap)
+        elif file_['type'] == 'image':
+            db.images.insert( id_wrap)
+    return file_id
 
 def get_or_add_user(client):
     account_info = client.account_info()
@@ -197,3 +238,15 @@ def get_folder_data(session):
 def get_account_info(session):
     client = session['client']
     return json.dumps(client.account_info())
+
+def get_actual_files(files):
+    return [db.files.find_one(file_['file_id']) for file_ in files]
+
+def dropdb():
+    db.users.drop()
+    db.files.drop()
+    db.public_files.drop()
+    db.images.drop()
+    db.audios.drop()
+
+
