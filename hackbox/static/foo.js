@@ -165,18 +165,6 @@ var drawFolderName = function(x, y, data) {
     folderName.show();
 }
 
-var drawPrettyButton = function(x, y, data) {
-    var button = paper.circle(x, y, 60).attr({fill: "r(0.75, 0.25)#fff-#ccc", stroke: "rgb(188, 188, 188)"});
-    button.click(function() {
-        // FILL IN
-    });
-    button.mouseover(function () {
-        button.stop().animate({transform: "s1.05 1.05 " + x + " " + y}, 500, "elastic").attr("cursor", "pointer");
-    }).mouseout(function () {
-        button.stop().animate({transform: ""}, 500, "elastic");
-    });
-}
-
 var redrawAll = function(data) {
     currentFolder = data;
     paper.clear();
@@ -207,8 +195,8 @@ var bytesToMB = function(bytes) {
         var button = paper.circle(x, y, 60).attr({fill: "r(0.75, 0.25)#fff-#ccc", stroke: "rgb(188, 188, 188)"});
         button.click(function() {
             if (data.path == "/") {
-                $("#menu").slideToggle(500);
                 $("#sharelink").html("Not available for /");
+                $("#menu").slideToggle(500);
             } else {
                 $("#menu").slideToggle(500);
                 shareStuff(data.path, function(result) { $("#sharelink").html(result.link.url); });
@@ -267,6 +255,7 @@ var display = function(item, parent) {
     var elem = $("<h3>" + name + "</h3>");
     if (item.path == "/") { elem = $("<h3>Dropbox</h3>"); }
     elem.attr("assoc", item.path);
+    elem.attr("display", "none");
 
     parent.append(elem);
     var innerdiv = $("<div></div>").addClass("folder");
@@ -284,6 +273,7 @@ var display = function(item, parent) {
     elem.click(function() {
         redrawAll(item);
     });
+    elem.fadeIn(500);
 }
 
 $(document).ready(function() {
