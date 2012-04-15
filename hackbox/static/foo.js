@@ -1,6 +1,10 @@
 $(document).ready(function() {
 
     var paper = Raphael("holder", $(window).width(), $(window).height());
+    
+    var makeRandomColor = function() {
+        return "rgb(".concat(Math.random() * 255, ',', Math.random() * 255, ',', Math.random() * 255, ')');
+    };
 
     var makeFolderArc = function(x, y, width, radius, data) {
         var param = {"stroke-width": width};
@@ -70,12 +74,19 @@ $(document).ready(function() {
         folderName.show();
     }
 
+    var drawPrettyButton = function(x, y, data) {
+        paper.circle(x, y, 60).attr({fill: "rgb(255, 255, 255)", stroke: "rgb(255, 255, 255)"});
+        paper.click(function() {
+            // FILL IN            
+        });
+    }
+
     var redrawAll = function(data) {
         paper.clear();
         var x = 3 * $(window).width() / 5;
         var y = $(window).height() / 2;
-        paper.circle(x, y, 60).attr({fill: "rgb(255, 255, 255)", stroke: "rgb(255, 255, 255)"});
         drawPrettyCircle(x, y, data);
+        drawPrettyButton(x, y, data);
         drawFolderName(x, y, data);
         updateDetails(data);
     }
