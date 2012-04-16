@@ -16,7 +16,7 @@ def login():
 
 @app.route('/auth')
 def auth():
-    session['oauth_key'] = session['sess'].obtain_access_token(session['request_token']).key
+    session['sess'].obtain_access_token(session['request_token']).key
     session['client'] = dropbox.client.DropboxClient(session['sess'])
     return redirect('/')
         
@@ -55,12 +55,17 @@ def get_folder_data():
     client = session['client']
     user = helper.get_or_add_user(client)
     has_update = helper.update_files(client, user=user)
-    folder_obj = db.folder_datas.find_one({'key' : session['oauth_key']})
+    folder_obj = db.folder_datas.find_one({'uid' : user['uid']})
     if has_update or not folder_obj:
-        folder_obj = {'key' : session['oauth_key'],
-                      'data': helper.get_nested_folder(client)}
-        db.folder_datas.insert(folder_obj)
-    folder_data = folder_obj['data']
+        folder_data = helper.get_nested_folder(client)
+        if not folder_obj:
+            db.folder_datas.insert({'uid' : user['uid'],
+                                    'data' : folder_data })
+        else:
+            db.folder_datas.update({'uid' : user['uid']},
+                                   {'$set' : {'data' : folder_data }})
+    else:
+        folder_data = folder_obj['data']
     return jsonify(folder_data)
 
 @app.route('/get_account_info')
