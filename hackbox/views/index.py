@@ -5,7 +5,7 @@ from hackbox import app
 import hackbox.helper as helper
 from hackbox.db import db
 
-@app.route('/login/')
+@app.route('/login')
 def login():
     session['sess'] = sess = dropbox.session.DropboxSession(app.config['APP_KEY'], 
                                                             app.config['APP_SECRET'], 
@@ -16,9 +16,8 @@ def login():
 
 @app.route('/auth')
 def auth():
-    session['sess'].obtain_access_token(session['request_token'])
+    session['oauth_key'] = session['sess'].obtain_access_token(session['request_token']).key
     session['client'] = dropbox.client.DropboxClient(session['sess'])
-    #helper.post_auth(session['client'])
     return redirect('/')
         
 @app.route('/')
@@ -55,12 +54,13 @@ def share(type_=None):
 def get_folder_data():
     client = session['client']
     user = helper.get_or_add_user(client)
-    user = helper.get_or_add_user(client)
-    helper.update_files(client, user=user)
-    if 'folder_data' not in session:
-        folder_data = helper.get_nested_folder(client)
-    else:
-        folder_data = session['folder_data']
+    has_update = helper.update_files(client, user=user)
+    folder_obj = db.folder_datas.find_one({'key' : session['oauth_key']})
+    if has_update or not folder_obj:
+        folder_obj = {'key' : session['oauth_key'],
+                      'data': helper.get_nested_folder(client)}
+        db.folder_datas.insert(folder_obj)
+    folder_data = folder_obj['data']
     return jsonify(folder_data)
 
 @app.route('/get_account_info')
@@ -77,10 +77,3 @@ def share_folder():
     share = client.share(path)
     return jsonify({'link':share})
 
-@app.route('/delete_folder')
-@helper.dropbox_auth_required
-def delete_folder():
-    client = session['client']
-    path = request.args.get('path')
-    share = client.file_delete( path )
-    return jsonify({})

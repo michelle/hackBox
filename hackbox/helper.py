@@ -149,7 +149,7 @@ def update_files(client, uid=None, user=None):
         entries = delta["entries"]
 
         if len(entries) == 0 and not files: # first round of update; nothing new
-            return
+            return False
 
         if files is None or dict_files is None:
             files = get_files(client, user=user)
@@ -172,7 +172,7 @@ def update_files(client, uid=None, user=None):
                 files = filter(lambda file_: not file_['lc_path'].startswith(path), files)
         cursor = delta["cursor"]
         if not delta["has_more"]:
-            break
+            return True
 
     def get_file_id(file_):
         if type(file_) != type({}):
@@ -262,20 +262,6 @@ def get_or_add_user(client):
             'cursor': None,
         })
     return db.users.find_one({'uid': uid})
-
-def post_auth(client):
-    user = get_or_add_user(client) 
-    update_files(client, user=user)
-
-def get_folder_data(session):
-    client = session['client']
-    user = get_or_add_user(client)
-    update_files(client, user=user)
-    if 'folder_data' not in session:
-        folder_data = get_nested_folder(client)
-    else:
-        older_data = session['folder_data']
-    return json.dumps(folder_data)
 
 def get_account_info(session):
     client = session['client']
