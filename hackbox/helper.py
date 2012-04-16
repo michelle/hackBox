@@ -113,12 +113,13 @@ def strip_object_id(files):
 def get_nested_folder(client):
     return nested_list(strip_object_id(with_folder_size(get_files(client), user=get_user(client))))
 
-def getClient():
+def get_client():
     sess = dropbox.session.DropboxSession(app.config['APP_KEY'], 
                                    app.config['APP_SECRET'], 
                                    app.config['ACCESS_TYPE'])
     request_token = sess.obtain_request_token()
     url = sess.build_authorize_url(request_token)
+    os.system('open %s' % url)
     raw_input("%s\nPlease authorize in the browser. After you're done, press enter." % url)
     sess.obtain_access_token(request_token)
     return dropbox.client.DropboxClient(sess)
