@@ -173,7 +173,7 @@ def update_files(client, uid=None, user=None):
                 files = filter(lambda file_: not file_['lc_path'].startswith(path), files)
         cursor = delta["cursor"]
         if not delta["has_more"]:
-            return True
+            break
 
     def get_file_id(file_):
         if type(file_) != type({}):
@@ -210,6 +210,7 @@ def update_files(client, uid=None, user=None):
                  'size_updated' : False,
                 }
             }, safe=True)
+    return True
 
 def get_files(client=None, uid=None, user=None):
     if not client:
