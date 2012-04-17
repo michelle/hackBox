@@ -90,7 +90,7 @@ def nested_list(files):
     for file_ in files:
         files_by_depth[get_depth(file_['lc_path'])].append(file_)
     dict_files = get_dict_files(files)
-    max_depth = max(files_by_depth.keys())
+    max_depth = max(files_by_depth.keys()+[0])
     for depth in range(max_depth, 0, -1):
         e = files_by_depth[depth]
         children = defaultdict(list)
