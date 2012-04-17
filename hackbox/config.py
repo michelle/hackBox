@@ -4,7 +4,7 @@ DEBUG = True
 SECRET_KEY = "DOBOY"
 
 #mongo
-MONGODB_HOST = os.environ.get('DATABASE_URL', "127.0.0.1")
+MONGODB_HOST = os.environ.get('MONGOLAB_URI', "127.0.0.1")
 MONGODB_PORT = 27017
 MONGODB_DATABASE = "hackbox"
 
