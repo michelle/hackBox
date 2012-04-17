@@ -10,6 +10,11 @@ def create_database_instance():
 
 db = create_database_instance()
 
+if os.environ.get('HEROKU'):
+	username = os.environ.get('DB_USERNAME')
+	password = os.environ.get('DB_PASSWORD')
+	db.authenticate(username, password)
+
 #db.users.ensure_index("email", 1, unique=True)
 #db.users.ensure_index("uid", 1, unique=True)
 #db.sessions.ensure_index("token", unique=True)

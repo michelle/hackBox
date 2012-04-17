@@ -1,12 +1,11 @@
 import os
 
-DEBUG = True
+DEBUG = not bool(os.environ.get('HEROKU'))
 SECRET_KEY = os.environ.get('SECRET_KEY', "DOBOY")
 URL_BASE = os.environ.get('URL_BASE', 'http://localhost:5000/')
 
 #mongo
 MONGODB_HOST = os.environ.get('MONGOLAB_URI', "127.0.0.1")
-# MONGODB_PORT = int(os.environ.get('MONGOLAB_PORT', 27017))
 MONGODB_DATABASE = "hackbox"
 
 #dropbox
