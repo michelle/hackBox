@@ -1,11 +1,10 @@
 import os
 
-ENV = os.environ['DATABASE_URL']
 DEBUG = True
 SECRET_KEY = "DOBOY"
 
 #mongo
-MONGODB_HOST = ENV.get('DATABASE_URL', "127.0.0.1")
+MONGODB_HOST = os.environ('DATABASE_URL', "127.0.0.1")
 MONGODB_PORT = 27017
 MONGODB_DATABASE = "hackbox"
 
