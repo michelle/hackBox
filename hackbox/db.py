@@ -3,6 +3,7 @@
 
 import config
 import pymongo
+import os
 
 def create_database_instance():
 	connection = pymongo.Connection(config.MONGODB_HOST)
