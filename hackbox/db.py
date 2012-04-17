@@ -5,7 +5,7 @@ import config
 import pymongo
 
 def create_database_instance():
-	connection = pymongo.Connection(config.MONGODB_HOST, config.MONGODB_PORT)
+	connection = pymongo.Connection(config.MONGODB_HOST)
 	return connection[config.MONGODB_DATABASE]
 
 db = create_database_instance()
