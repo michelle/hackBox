@@ -1,7 +1,8 @@
 import os
 
 DEBUG = True
-SECRET_KEY = "DOBOY"
+SECRET_KEY = os.environ.get('SECRET_KEY', "DOBOY")
+URL_BASE = os.environ.get('URL_BASE', 'http://localhost:5000/')
 
 #mongo
 MONGODB_HOST = os.environ.get('MONGOLAB_URI', "127.0.0.1")

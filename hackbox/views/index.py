@@ -11,7 +11,7 @@ def login():
                                                             app.config['APP_SECRET'], 
                                                             app.config['ACCESS_TYPE'])
     session['request_token'] = request_token = sess.obtain_request_token()
-    url = sess.build_authorize_url(request_token, oauth_callback="http://localhost:5000/auth")
+    url = sess.build_authorize_url(request_token, oauth_callback=app.config['URL_BASE']+url_for('auth'))
     return redirect(url)
 
 @app.route('/auth')
