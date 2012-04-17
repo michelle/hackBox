@@ -1,4 +1,4 @@
-DEBUG = True
+DEBUG = False
 SECRET_KEY = "DOBOY"
 
 #mongo
