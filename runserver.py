@@ -4,7 +4,7 @@ from hackbox import app
 import os
                       
 if __name__ == '__main__':
-    if app.debug:
+    if False:#app.debug:
         app.run(debug=True, use_debugger=True)
     else:
         port = int(os.environ.get("PORT", 5000))
