@@ -10,6 +10,6 @@ def create_database_instance():
 
 db = create_database_instance()
 
-db.users.ensure_index("email", 1, unique=True)
-db.users.ensure_index("uid", 1, unique=True)
-db.sessions.ensure_index("token", unique=True)
+#db.users.ensure_index("email", 1, unique=True)
+#db.users.ensure_index("uid", 1, unique=True)
+#db.sessions.ensure_index("token", unique=True)
