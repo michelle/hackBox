@@ -1,2 +1,2 @@
-web: python runserver.py 2&>logs
+web: python runserver.py
 
