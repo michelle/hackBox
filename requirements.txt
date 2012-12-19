@@ -2,7 +2,7 @@ Flask==0.8
 Jinja2==2.6
 Werkzeug==0.8.3
 distribute==0.6.24
-dropbox==1.4
+dropbox==1.4.0
 -e git+git@github.com:Doboy/hackBox.git@4ac232e5a44481680e255b4396cb764d3ef74150#egg=hackbox-dev
 hurry.filesize==0.9
 oauth==1.0.1

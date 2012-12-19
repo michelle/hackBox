@@ -9,7 +9,7 @@ setup(
     zip_safe=False,
     install_requires=[
         'Flask',
-        'dropbox',
+        'dropbox==1.4',
         'hurry.filesize',
         #'Flask-Compass',
         'pymongo',
