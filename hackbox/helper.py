@@ -36,7 +36,7 @@ def dropbox_auth_required(f):
     def decorated_function(*args, **kwargs):
         if 'client' not in session or 'sess' not in session:
             return redirect(url_for('login'))
-        return f(*args, **kwargs) 
+        return f(*args, **kwargs)
     return decorated_function
 
 
@@ -86,7 +86,7 @@ def with_folder_size(files, user=None):
     return new_files
 
 def nested_list(files):
-    files_by_depth = defaultdict(list)    
+    files_by_depth = defaultdict(list)
     for file_ in files:
         files_by_depth[get_depth(file_['lc_path'])].append(file_)
     dict_files = get_dict_files(files)
@@ -114,8 +114,8 @@ def get_nested_folder(client):
     return nested_list(strip_object_id(with_folder_size(get_files(client), user=get_user(client))))
 
 def get_client():
-    sess = dropbox.session.DropboxSession(app.config['APP_KEY'], 
-                                   app.config['APP_SECRET'], 
+    sess = dropbox.session.DropboxSession(app.config['APP_KEY'],
+                                   app.config['APP_SECRET'],
                                    app.config['ACCESS_TYPE'])
     request_token = sess.obtain_request_token()
     url = sess.build_authorize_url(request_token)
@@ -144,7 +144,7 @@ def update_files(client, uid=None, user=None):
     files = None
     dict_files = None
     cursor = user.get('cursor', None)
-    
+
     while True:
         delta = client.delta(cursor)
         entries = delta["entries"]
@@ -251,7 +251,7 @@ def insert_file(user, file_, path):
 
 def get_or_add_user(client):
     account_info = client.account_info()
-    email = account_info['email'] 
+    email = account_info['email']
     display_name = account_info['display_name']
     uid = account_info['uid']
     if db.users.find({'uid': uid}).count() > 0:
