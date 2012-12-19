@@ -56,7 +56,7 @@ var drawFolderHistory = function(x0, y0, prevFolder) {
         paper.circle(x, y, 40).attr({fill: "r(0.75, 0.25)#fff-#ccc", stroke: "rgb(188, 188, 188)"});
         var st = paper.setFinish();
         st.attr({transform: "s0.4 0.4 " + x + " " + y, "stroke-width": 20});
-
+        
         (function(id, _st) {
             _st.mouseover(function () {
                 _st.stop().animate({"stroke-opacity": 0.5}, 500, "elastic").attr("cursor", "pointer");
@@ -102,7 +102,7 @@ var makeFolderArc = function(x, y, width, radius, data, parentData, isHistoryPre
                 $("h3[assoc='" + this.data("assoc") + "']").addClass("selected");
                 updateDetails(this.data("folder"));
             }).mouseout(function () {
-                this.stop().animate({"stroke-opacity": 1, "stroke-width": 40}, 500, "elastic");
+                this.stop().animate({"stroke-opacity": 1, "stroke-width": 40}, 500, "elastic"); 
                 $("h3[assoc='" + this.data("assoc") + "']").removeClass("selected");
                 updateDetails(parentData);
             }).click(function() {
@@ -150,7 +150,7 @@ var drawPrettyLayer = function(x, y, data, parentData, parentStart, parentEnd, i
                 start = end;
             }
         }
-    }
+    }        
 }
 
 var drawFolderName = function(x, y, data) {
@@ -231,7 +231,7 @@ var updateDetails = function(item) {
     } else {
         $("#size").html("--");
     }
-
+    
     if (item.modified != undefined) {
         var date = item.modified.split(' ');
         $("#modified").html(date[1] + " " + date[2] + " " + date[3]);
@@ -267,9 +267,9 @@ var display = function(item, parent) {
             display(item.children[i], innerdiv);
         }
     } else {
-        elem.addClass("file");
+        elem.addClass("file");      
     }
-    parent.append(innerdiv);
+    parent.append(innerdiv); 
     elem.click(function() {
         redrawAll(item);
     });
@@ -321,7 +321,7 @@ $(document).ready(function() {
 
         redrawAll(data);
         $("#details").fadeIn(500);
-
+        
         $(window).resize(function () {
             paper = Raphael("holder", $(window).width(), $(window).height());
             redrawAll(currentFolder);
@@ -329,7 +329,7 @@ $(document).ready(function() {
     });
 
     $.get('/get_account_info', function(user) {
-        $("#userinfo").html("Welcome, <strong>" + user.display_name + "</strong>.<hr>You have <strong>"
+        $("#userinfo").html("Welcome, <strong>" + user.display_name + "</strong>.<hr>You have <strong>" 
 			    + Math.round(bytesToMB(user.quota_info.quota)) + " MB</strong> of data total.<br>You are using <strong>"
 			    + Math.round((user.quota_info.normal + user.quota_info.shared)/user.quota_info.quota * 100) + "%</strong> of your space and have <strong>"
 			    + Math.round(bytesToMB(user.quota_info.quota - (user.quota_info.normal + user.quota_info.shared))) + " MB</strong> remaining.");
@@ -341,7 +341,7 @@ $(document).ready(function() {
 
 
     shareStuff = function(path, fn) {
-        $.get('/share_folder', {'path': path }, function(data){
+        $.get('/share_folder', {'path': path }, function(data){ 
             fn(data);
         })
     }
